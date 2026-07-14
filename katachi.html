@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script src="../bridge.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>うちゅうの かたち たんけん</title>
+<style>
+  :root{
+    --space:#1c2a5e;
+    --space-deep:#141f4a;
+    --card:#26377a;
+    --star:#ffd93d;
+    --coral:#ff6b81;
+    --mint:#4ecdc4;
+    --lav:#a78bfa;
+    --white:#fffdf5;
+    --ok:#3ddc84;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Hiragino Maru Gothic ProN','BIZ UDPGothic','Yu Gothic UI','Meiryo',sans-serif;
+    background:radial-gradient(ellipse at 50% -10%, #33479c 0%, var(--space) 45%, var(--space-deep) 100%);
+    color:var(--white);
+    min-height:100%;
+    overflow-x:hidden;
+    user-select:none;
+  }
+  /* ---- twinkling stars background ---- */
+  .bg-star{position:fixed;border-radius:50%;background:#fff;opacity:.7;animation:tw 3s infinite ease-in-out;pointer-events:none;z-index:0;}
+  @keyframes tw{0%,100%{opacity:.15;transform:scale(.8);}50%{opacity:.9;transform:scale(1.2);}}
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01s !important;transition-duration:.01s !important;}
+  }
+
+  .screen{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column;}
+  .hidden{display:none !important;}
+
+  /* ---- Home ---- */
+  .title{
+    text-align:center;margin:18px 0 4px;font-size:30px;font-weight:800;letter-spacing:.06em;
+    text-shadow:0 3px 0 rgba(0,0,0,.25);
+  }
+  .title small{display:block;font-size:14px;color:var(--star);letter-spacing:.3em;margin-bottom:6px;font-weight:700;}
+  .rocket-panel{
+    background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);
+    border-radius:24px;padding:14px 18px;margin:14px 0 6px;display:flex;align-items:center;gap:14px;
+  }
+  .rocket-emoji{font-size:44px;line-height:1;}
+  .gauge-wrap{flex:1;}
+  .gauge-label{font-size:13px;font-weight:700;color:#cdd6ff;margin-bottom:6px;}
+  .gauge{height:20px;border-radius:12px;background:rgba(0,0,0,.35);overflow:hidden;}
+  .gauge-fill{height:100%;width:0%;border-radius:12px;background:linear-gradient(90deg,var(--star),#ffb347);transition:width .6s cubic-bezier(.34,1.56,.64,1);}
+  .star-count{font-size:20px;font-weight:800;color:var(--star);white-space:nowrap;}
+
+  .planet-btn{
+    width:100%;border:none;cursor:pointer;margin-top:14px;
+    display:flex;align-items:center;gap:16px;text-align:left;
+    background:var(--card);border-radius:28px;padding:16px 20px;
+    color:var(--white);font-family:inherit;
+    border:3px solid rgba(255,255,255,.12);
+    box-shadow:0 6px 0 rgba(0,0,0,.3);
+    transition:transform .1s;
+  }
+  .planet-btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.3);}
+  .planet-btn:focus-visible{outline:4px solid var(--star);outline-offset:2px;}
+  .planet-icon{font-size:46px;width:64px;height:64px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;}
+  .p1 .planet-icon{background:rgba(255,107,129,.25);}
+  .p2 .planet-icon{background:rgba(78,205,196,.25);}
+  .p3 .planet-icon{background:rgba(167,139,250,.25);}
+  .planet-name{font-size:22px;font-weight:800;margin:0 0 3px;}
+  .planet-desc{font-size:13px;color:#c3cdf5;margin:0;font-weight:600;}
+  .planet-stars{margin-left:auto;font-size:15px;font-weight:800;color:var(--star);}
+
+  /* ---- Game ---- */
+  .game-header{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+  .back-btn{
+    border:none;background:rgba(255,255,255,.12);color:var(--white);
+    font-size:22px;width:48px;height:48px;border-radius:16px;cursor:pointer;flex-shrink:0;
+  }
+  .back-btn:focus-visible{outline:4px solid var(--star);}
+  .dots{display:flex;gap:8px;flex:1;justify-content:center;}
+  .dot{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s;}
+  .dot.done{background:var(--star);transform:scale(1.15);}
+  .dot.now{border:3px solid var(--star);}
+  .hud-star{font-size:17px;font-weight:800;color:var(--star);}
+
+  .question{
+    text-align:center;font-size:21px;font-weight:800;margin:10px 0 6px;line-height:1.5;
+    min-height:2.2em;
+  }
+  .question .em{color:var(--star);}
+  .stage{
+    background:rgba(255,255,255,.07);border-radius:26px;border:2px solid rgba(255,255,255,.12);
+    padding:16px;display:flex;justify-content:center;align-items:center;margin-bottom:14px;min-height:150px;
+  }
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .opt{
+    border:none;cursor:pointer;background:var(--card);border-radius:24px;padding:14px;
+    display:flex;justify-content:center;align-items:center;min-height:110px;
+    border:3px solid rgba(255,255,255,.14);
+    box-shadow:0 6px 0 rgba(0,0,0,.3);transition:transform .1s;
+    font-family:inherit;color:var(--white);font-size:40px;font-weight:800;
+  }
+  .opt:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.3);}
+  .opt:focus-visible{outline:4px solid var(--star);outline-offset:2px;}
+  .opt.correct{background:#1e6b45;border-color:var(--ok);animation:pop .45s;}
+  .opt.wrong{background:#7a2b3a;border-color:var(--coral);animation:shake .45s;}
+  .opt:disabled{cursor:default;}
+  @keyframes pop{0%{transform:scale(1);}40%{transform:scale(1.12);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+  /* animal grid game */
+  .agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:330px;}
+  .acell{
+    border:none;cursor:pointer;background:rgba(255,255,255,.1);border-radius:20px;
+    font-size:44px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+    border:3px solid rgba(255,255,255,.14);font-family:inherit;
+    box-shadow:0 5px 0 rgba(0,0,0,.28);transition:transform .1s;
+  }
+  .acell:active{transform:translateY(3px);}
+  .acell:focus-visible{outline:4px solid var(--star);}
+  .acell.correct{background:#1e6b45;border-color:var(--ok);animation:pop .45s;}
+  .acell.wrong{background:#7a2b3a;border-color:var(--coral);animation:shake .45s;}
+  .acell.hint{border-color:var(--star);background:rgba(255,217,61,.2);}
+
+  .feedback{
+    text-align:center;font-size:24px;font-weight:800;min-height:1.4em;margin-top:12px;
+  }
+  .feedback.good{color:var(--ok);}
+  .feedback.bad{color:var(--coral);}
+
+  /* ---- Result ---- */
+  .result-box{text-align:center;margin-top:8vh;}
+  .result-big{font-size:70px;animation:pop .6s;}
+  .result-title{font-size:30px;font-weight:800;margin:8px 0;}
+  .result-stars{font-size:34px;letter-spacing:.1em;margin:10px 0 24px;}
+  .big-btn{
+    display:block;width:100%;border:none;cursor:pointer;font-family:inherit;
+    background:var(--star);color:#4a3800;font-size:22px;font-weight:800;
+    border-radius:24px;padding:18px;margin-top:14px;
+    box-shadow:0 6px 0 #b8930a;transition:transform .1s;
+  }
+  .big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #b8930a;}
+  .big-btn:focus-visible{outline:4px solid #fff;}
+  .big-btn.ghost{background:rgba(255,255,255,.15);color:var(--white);box-shadow:0 6px 0 rgba(0,0,0,.3);}
+
+  /* rocket launch overlay */
+  .launch{
+    position:fixed;inset:0;background:rgba(10,16,42,.92);z-index:50;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .launch .r{font-size:90px;animation:fly 2.4s ease-in forwards;}
+  @keyframes fly{0%{transform:translateY(120px);}25%{transform:translateY(100px) rotate(-2deg);}100%{transform:translateY(-90vh);}}
+  .launch p{font-size:26px;font-weight:800;color:var(--star);}
+
+  .confetti{position:fixed;top:-20px;font-size:24px;z-index:40;animation:fall linear forwards;pointer-events:none;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<div class="screen" id="home">
+  <h1 class="title"><small>★ そらの むこうへ ★</small>うちゅうの<br>かたち たんけん</h1>
+
+  <div class="rocket-panel">
+    <div class="rocket-emoji">🚀</div>
+    <div class="gauge-wrap">
+      <div class="gauge-label">ほしを <span id="needStars">15</span>こ あつめて ロケットはっしゃ!</div>
+      <div class="gauge"><div class="gauge-fill" id="gaugeFill"></div></div>
+    </div>
+    <div class="star-count">⭐<span id="totalStars">0</span></div>
+  </div>
+
+  <button class="planet-btn p1" onclick="startGame('rotate')">
+    <span class="planet-icon">🔄</span>
+    <span><span class="planet-name">くるくるぼし</span><br><span class="planet-desc">まわしても おなじ かたちを さがそう</span></span>
+    <span class="planet-stars">⭐<span id="s-rotate">0</span></span>
+  </button>
+
+  <button class="planet-btn p2" onclick="startGame('blocks')">
+    <span class="planet-icon">🧊</span>
+    <span><span class="planet-name">つみきぼし</span><br><span class="planet-desc">つみきの かずを かぞえよう</span></span>
+    <span class="planet-stars">⭐<span id="s-blocks">0</span></span>
+  </button>
+
+  <button class="planet-btn p3" onclick="startGame('where')">
+    <span class="planet-icon">🐰</span>
+    <span><span class="planet-name">どこかなぼし</span><br><span class="planet-desc">みぎ・ひだり・うえ・した を おぼえよう</span></span>
+    <span class="planet-stars">⭐<span id="s-where">0</span></span>
+  </button>
+</div>
+
+<!-- ============ GAME ============ -->
+<div class="screen hidden" id="game">
+  <div class="game-header">
+    <button class="back-btn" onclick="goHome()" aria-label="もどる">🏠</button>
+    <div class="dots" id="dots"></div>
+    <div class="hud-star">⭐<span id="hudStars">0</span></div>
+  </div>
+  <div class="question" id="question"></div>
+  <div class="stage" id="stage"></div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+</div>
+
+<!-- ============ RESULT ============ -->
+<div class="screen hidden" id="result">
+  <div class="result-box">
+    <div class="result-big" id="resultEmoji">🎉</div>
+    <div class="result-title" id="resultTitle">よくできました!</div>
+    <div class="result-stars" id="resultStars"></div>
+    <button class="big-btn" onclick="retry()">もういちど あそぶ</button>
+    <button class="big-btn ghost" onclick="goHome()">ほしを えらぶ</button>
+  </div>
+</div>
+
+<script>
+/* =================== state =================== */
+const QUESTIONS_PER_ROUND = 5;
+const ROCKET_GOAL = 15;
+let state = {
+  total: 0,
+  perGame: { rotate:0, blocks:0, where:0 },
+  rocketBase: 0,          // stars already "spent" on past launches
+  game: null,
+  qIndex: 0,
+  earned: 0,
+  answered: false,
+  firstTry: true,
+};
+
+/* =================== audio =================== */
+let actx = null;
+function tone(freq, t0, dur, type='sine', vol=.18){
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, actx.currentTime + t0);
+  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + t0 + dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(actx.currentTime + t0); o.stop(actx.currentTime + t0 + dur + .05);
+}
+function sound(kind){
+  try{
+    if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    if(actx.state === 'suspended') actx.resume();
+    if(kind==='good'){ tone(523,0,.15); tone(659,.12,.15); tone(784,.24,.25); }
+    else if(kind==='bad'){ tone(220,0,.25,'triangle'); }
+    else if(kind==='fanfare'){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.13,.3)); }
+    else if(kind==='launch'){ tone(140,0,1.6,'sawtooth',.1); tone(90,0,1.8,'triangle',.12); }
+  }catch(e){}
+}
+
+/* =================== helpers =================== */
+const $ = id => document.getElementById(id);
+const rand = a => a[Math.floor(Math.random()*a.length)];
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function show(id){
+  ['home','game','result'].forEach(s=>$(s).classList.add('hidden'));
+  $(id).classList.remove('hidden');
+}
+function updateHome(){
+  $('totalStars').textContent = state.total;
+  $('s-rotate').textContent = state.perGame.rotate;
+  $('s-blocks').textContent = state.perGame.blocks;
+  $('s-where').textContent = state.perGame.where;
+  const progress = Math.min(state.total - state.rocketBase, ROCKET_GOAL);
+  $('needStars').textContent = Math.max(ROCKET_GOAL - progress, 0);
+  $('gaugeFill').style.width = (progress/ROCKET_GOAL*100) + '%';
+}
+
+/* =================== shapes (rotation game) =================== */
+/* cell-based shapes; mirror pairs are the key distractors */
+const SHAPES = {
+  L:  [[0,0],[0,1],[0,2],[1,2]],
+  J:  [[1,0],[1,1],[1,2],[0,2]],          // mirror of L
+  S:  [[1,0],[2,0],[0,1],[1,1]],
+  Z:  [[0,0],[1,0],[1,1],[2,1]],          // mirror of S
+  T:  [[0,0],[1,0],[2,0],[1,1]],
+  P:  [[0,0],[1,0],[0,1],[1,1],[0,2]],
+  Q:  [[0,0],[1,0],[0,1],[1,1],[1,2]],    // mirror of P
+  V:  [[0,0],[0,1],[0,2],[1,2],[2,2]],
+};
+const MIRROR = { L:'J', J:'L', S:'Z', Z:'S', P:'Q', Q:'P' };
+const SHAPE_COLORS = ['#ff6b81','#4ecdc4','#ffd93d','#a78bfa','#6bcbff'];
+
+function rotCells(cells, times){
+  let c = cells.map(p=>[...p]);
+  for(let t=0;t<times;t++){
+    const maxY = Math.max(...c.map(p=>p[1]));
+    c = c.map(([x,y])=>[maxY-y, x]);
+  }
+  const minX = Math.min(...c.map(p=>p[0])), minY = Math.min(...c.map(p=>p[1]));
+  return c.map(([x,y])=>[x-minX, y-minY]);
+}
+function shapeSVG(cells, color, size){
+  const maxX = Math.max(...cells.map(p=>p[0]))+1;
+  const maxY = Math.max(...cells.map(p=>p[1]))+1;
+  const dim = Math.max(maxX, maxY);
+  const cell = size/dim;
+  const offX = (size - maxX*cell)/2, offY = (size - maxY*cell)/2;
+  let rects = cells.map(([x,y])=>
+    `<rect x="${offX+x*cell+1.5}" y="${offY+y*cell+1.5}" width="${cell-3}" height="${cell-3}" rx="${cell*0.22}" fill="${color}" stroke="rgba(0,0,0,.25)" stroke-width="2"/>`
+  ).join('');
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">${rects}</svg>`;
+}
+
+function makeRotateQ(){
+  const key = rand(Object.keys(SHAPES).filter(k=>!['J','Z','Q'].includes(k))); // targets from one of each mirror-pair
+  const color = rand(SHAPE_COLORS);
+  const target = SHAPES[key];
+  const correct = rotCells(target, 1 + Math.floor(Math.random()*3));
+  const distractors = [];
+  if(MIRROR[key]) distractors.push(rotCells(SHAPES[MIRROR[key]], Math.floor(Math.random()*4)));
+  const others = Object.keys(SHAPES).filter(k=>k!==key && k!==MIRROR[key]);
+  while(distractors.length < 3){
+    distractors.push(rotCells(SHAPES[rand(others)], Math.floor(Math.random()*4)));
+  }
+  return { type:'rotate', color, target, options: shuffle([{c:correct, ok:true}, ...distractors.slice(0,3).map(c=>({c, ok:false}))]) };
+}
+function renderRotateQ(q){
+  $('question').innerHTML = 'くるくる まわすと <span class="em">おなじ かたち</span>は どれ?';
+  $('stage').innerHTML = shapeSVG(q.target, q.color, 130);
+  $('options').style.display = 'grid';
+  $('options').innerHTML = '';
+  q.options.forEach(opt=>{
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = shapeSVG(opt.c, q.color, 90);
+    b.onclick = ()=>answer(b, opt.ok);
+    $('options').appendChild(b);
+  });
+}
+
+/* =================== blocks (cube counting) =================== */
+const BLOCK_CONFIGS_EASY = [
+  [[0,0,0],[1,0,0]],
+  [[0,0,0],[1,0,0],[2,0,0]],
+  [[0,0,0],[0,0,1]],
+  [[0,0,0],[1,0,0],[0,1,0]],
+  [[0,0,0],[1,0,0],[1,0,1]],
+];
+const BLOCK_CONFIGS_HARD = [
+  [[0,0,0],[1,0,0],[0,1,0],[1,1,0]],
+  [[0,0,0],[1,0,0],[2,0,0],[0,0,1],[1,0,1]],
+  [[0,0,0],[1,0,0],[0,1,0],[0,0,1]],
+  [[0,0,0],[1,0,0],[2,0,0],[1,0,1],[1,0,2]],
+  [[0,0,0],[1,0,0],[0,1,0],[1,1,0],[0,0,1],[0,1,1]],
+  [[0,0,0],[1,0,0],[2,0,0],[0,1,0],[0,0,1]],
+];
+function cubeSVG(cubes, size){
+  const w=34, h=17, ch=30;               // iso cell metrics
+  const pts = cubes.map(([x,y,z])=>({x,y,z, sx:(x-y)*w, sy:(x+y)*h - z*ch}));
+  const minX=Math.min(...pts.map(p=>p.sx))-w, maxX=Math.max(...pts.map(p=>p.sx))+w;
+  const minY=Math.min(...pts.map(p=>p.sy))-ch-h, maxY=Math.max(...pts.map(p=>p.sy))+h*2;
+  const sorted = pts.sort((a,b)=>(a.x+a.y)-(b.x+b.y) || a.z-b.z);
+  const c = {top:'#ffe066', left:'#f2a516', right:'#d98b0a', line:'#8a5a00'};
+  let g = sorted.map(p=>{
+    const X=p.sx, Y=p.sy;
+    return `
+    <polygon points="${X},${Y-ch} ${X+w},${Y-ch+h} ${X},${Y-ch+2*h} ${X-w},${Y-ch+h}" fill="${c.top}" stroke="${c.line}" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="${X-w},${Y-ch+h} ${X},${Y-ch+2*h} ${X},${Y+2*h} ${X-w},${Y+h}" fill="${c.left}" stroke="${c.line}" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="${X+w},${Y-ch+h} ${X},${Y-ch+2*h} ${X},${Y+2*h} ${X+w},${Y+h}" fill="${c.right}" stroke="${c.line}" stroke-width="2" stroke-linejoin="round"/>`;
+  }).join('');
+  return `<svg width="${size}" height="${size*0.8}" viewBox="${minX} ${minY} ${maxX-minX} ${maxY-minY}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${g}</svg>`;
+}
+function makeBlocksQ(){
+  const hard = state.qIndex >= 2;
+  const conf = rand(hard ? BLOCK_CONFIGS_HARD : BLOCK_CONFIGS_EASY);
+  const n = conf.length;
+  const choiceSet = new Set([n]);
+  while(choiceSet.size < 3){
+    const d = n + (Math.random()<.5?-1:1)*(1+Math.floor(Math.random()*2));
+    if(d>=1 && d<=9) choiceSet.add(d);
+  }
+  return { type:'blocks', conf, n, choices: shuffle([...choiceSet]) };
+}
+function renderBlocksQ(q){
+  $('question').innerHTML = 'つみきは <span class="em">いくつ</span> あるかな?';
+  $('stage').innerHTML = cubeSVG(q.conf, 240);
+  $('options').style.display = 'grid';
+  $('options').innerHTML = '';
+  q.choices.forEach(n=>{
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = n;
+    b.style.minHeight = '80px';
+    b.onclick = ()=>answer(b, n===q.n);
+    $('options').appendChild(b);
+  });
+}
+
+/* =================== where (grid position) =================== */
+const ANIMALS = ['🐰','🐻','🐱','🐶','🦊','🐼','🐸','🐷','🐥','🦁','🐨','🐹'];
+const DIRS = [
+  {key:'right', label:'みぎ', arrow:'➡️', dx: 1, dy: 0},
+  {key:'left',  label:'ひだり', arrow:'⬅️', dx:-1, dy: 0},
+  {key:'up',    label:'うえ', arrow:'⬆️', dx: 0, dy:-1},
+  {key:'down',  label:'した', arrow:'⬇️', dx: 0, dy: 1},
+];
+function makeWhereQ(){
+  const animals = shuffle(ANIMALS).slice(0,9);
+  let base, dir, tx, ty;
+  do{
+    base = Math.floor(Math.random()*9);
+    dir = rand(DIRS);
+    tx = base%3 + dir.dx; ty = Math.floor(base/3) + dir.dy;
+  }while(tx<0||tx>2||ty<0||ty>2);
+  return { type:'where', animals, base, dir, targetIdx: ty*3+tx };
+}
+function renderWhereQ(q){
+  $('question').innerHTML =
+    `${q.animals[q.base]}の <span class="em">${q.dir.label} ${q.dir.arrow}</span> に いるのは だあれ?`;
+  $('options').style.display = 'none';
+  $('options').innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'agrid';
+  q.animals.forEach((a,i)=>{
+    const b = document.createElement('button');
+    b.className = 'acell' + (i===q.base ? ' hint' : '');
+    b.textContent = a;
+    b.onclick = ()=>{
+      if(i===q.base){ return; }           // tapping the reference animal does nothing
+      answer(b, i===q.targetIdx);
+    };
+    grid.appendChild(b);
+  });
+  $('stage').innerHTML = '';
+  $('stage').appendChild(grid);
+}
+
+/* =================== game flow =================== */
+const MAKERS = { rotate: makeRotateQ, blocks: makeBlocksQ, where: makeWhereQ };
+const RENDER = { rotate: renderRotateQ, blocks: renderBlocksQ, where: renderWhereQ };
+let currentQ = null;
+
+function startGame(kind){
+  state.game = kind;
+  state.qIndex = 0;
+  state.earned = 0;
+  show('game');
+  nextQuestion();
+}
+function drawDots(){
+  $('dots').innerHTML = '';
+  for(let i=0;i<QUESTIONS_PER_ROUND;i++){
+    const d = document.createElement('div');
+    d.className = 'dot' + (i<state.qIndex ? ' done' : i===state.qIndex ? ' now' : '');
+    $('dots').appendChild(d);
+  }
+  $('hudStars').textContent = state.earned;
+}
+function nextQuestion(){
+  if(state.qIndex >= QUESTIONS_PER_ROUND){ return endRound(); }
+  state.answered = false;
+  state.firstTry = true;
+  $('feedback').textContent = '';
+  $('feedback').className = 'feedback';
+  drawDots();
+  currentQ = MAKERS[state.game]();
+  RENDER[state.game](currentQ);
+}
+function answer(btn, ok){
+  if(state.answered) return;
+  if(ok){
+    state.answered = true;
+    btn.classList.add('correct');
+    sound('good');
+    const praise = rand(['せいかい! すごい!','やったね!','よくみつけたね!','ピンポーン!','てんさい!']);
+    if(state.firstTry){
+      state.earned++;
+      state.total++;
+      state.perGame[state.game]++;
+      $('feedback').innerHTML = praise + ' ⭐ゲット!';
+    }else{
+      $('feedback').textContent = praise;
+    }
+    $('feedback').classList.add('good');
+    drawDots();
+    document.querySelectorAll('#options .opt, .acell').forEach(b=>b.disabled=true);
+    setTimeout(()=>{ state.qIndex++; nextQuestion(); }, 1300);
+  }else{
+    state.firstTry = false;
+    btn.classList.add('wrong');
+    btn.disabled = true;
+    sound('bad');
+    $('feedback').textContent = 'おしい! もういちど!';
+    $('feedback').className = 'feedback bad';
+    setTimeout(()=>btn.classList.remove('wrong'), 500);
+  }
+}
+function endRound(){
+  const perfect = state.earned === QUESTIONS_PER_ROUND;
+  $('resultEmoji').textContent = perfect ? '🏆' : state.earned >= 3 ? '🎉' : '💪';
+  $('resultTitle').textContent = perfect ? 'パーフェクト!' : state.earned >= 3 ? 'よくできました!' : 'がんばったね!';
+  $('resultStars').textContent = '⭐'.repeat(state.earned) + '☆'.repeat(QUESTIONS_PER_ROUND - state.earned);
+  sound('fanfare');
+  confetti();
+  show('result');
+  // rocket launch check
+  if(state.total - state.rocketBase >= ROCKET_GOAL){
+    setTimeout(launchRocket, 900);
+  }
+}
+function retry(){ startGame(state.game); }
+function goHome(){ updateHome(); show('home'); }
+
+/* =================== effects =================== */
+function confetti(){
+  const items = ['⭐','🌟','✨','🪐','🌙'];
+  for(let i=0;i<24;i++){
+    const s = document.createElement('div');
+    s.className = 'confetti';
+    s.textContent = rand(items);
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.animationDuration = (2 + Math.random()*2) + 's';
+    s.style.animationDelay = Math.random()*0.8 + 's';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(), 5000);
+  }
+}
+function launchRocket(){
+  state.rocketBase += ROCKET_GOAL;
+  sound('launch');
+  const ov = document.createElement('div');
+  ov.className = 'launch';
+  ov.innerHTML = '<div class="r">🚀</div><p>ロケット はっしゃ!<br>おめでとう!!</p>';
+  document.body.appendChild(ov);
+  confetti();
+  setTimeout(()=>ov.remove(), 3200);
+}
+
+/* =================== bg stars =================== */
+for(let i=0;i<40;i++){
+  const s = document.createElement('div');
+  s.className = 'bg-star';
+  const size = 1 + Math.random()*3;
+  s.style.width = s.style.height = size+'px';
+  s.style.left = Math.random()*100+'vw';
+  s.style.top = Math.random()*100+'vh';
+  s.style.animationDelay = Math.random()*3+'s';
+  document.body.appendChild(s);
+}
+updateHome();
+</script>
+
+<script>
+/* ===== まなびランド ブリッジ連携 ===== */
+MB.appStart('katachi');
+(function(){
+  const KEY='mb-katachi-v1';
+  try{
+    const s=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(s){
+      state.total = s.total||0;
+      state.perGame = Object.assign(state.perGame, s.perGame||{});
+      state.rocketBase = s.rocketBase||0;
+      updateHome();
+    }
+  }catch(e){}
+  function ksave(){
+    try{ localStorage.setItem(KEY, JSON.stringify({
+      total:state.total, perGame:state.perGame, rocketBase:state.rocketBase
+    })); }catch(e){}
+  }
+
+  /* ラウンド終了 → ほし3こ以上で 1シール / パーフェクトはレアが出やすい */
+  const _endRound = endRound;
+  endRound = function(){
+    _endRound();
+    MB.record('katachi.round');
+    MB.record('katachi.stars', state.earned);
+    if(state.earned===QUESTIONS_PER_ROUND){
+      MB.record('katachi.perfect');
+      MB.award('space', {rareBoost:true, delay:1000});
+    }else if(state.earned>=3){
+      MB.award('space', {delay:1000});
+    }
+    ksave();
+  };
+
+  /* ロケットはっしゃ → きろく (ひみつシール 🥇 の条件) */
+  const _launchRocket = launchRocket;
+  launchRocket = function(){
+    _launchRocket();
+    MB.record('katachi.rocket');
+    ksave();
+  };
+})();
+</script>
+</body>
+</html>

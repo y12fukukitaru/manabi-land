@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script src="../bridge.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>かんじの もり 🌳 - 5さいから まなべる かんじアプリ</title>
+<link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Zen+Maru+Gothic:wght@500;700;900&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFF6E7;
+    --paper-deep:#FBEBD2;
+    --ink:#4A3A2A;
+    --hanko:#E2523F;
+    --sun:#FFC93C;
+    --leaf:#7FB77E;
+    --sky:#6EB6D9;
+    --peach:#FFB4A2;
+    --shadow:0 6px 0 rgba(74,58,42,.14);
+    --round:26px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Zen Maru Gothic',sans-serif;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(255,201,60,.22) 0 90px, transparent 91px),
+      radial-gradient(circle at 88% 90%, rgba(127,183,126,.18) 0 110px, transparent 111px),
+      var(--paper);
+    color:var(--ink);
+    display:flex;justify-content:center;
+    min-height:100dvh;
+  }
+  #app{width:100%;max-width:520px;padding:16px 16px 28px;display:flex;flex-direction:column;min-height:100dvh;}
+
+  /* ---------- ヘッダー ---------- */
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .logo{font-family:'Hachi Maru Pop',cursive;font-size:1.45rem;letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
+  .logo .mark{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--hanko);color:#fff;font-family:'Klee One',serif;font-size:1.5rem;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 0 rgba(74,58,42,.18);
+    transform:rotate(-6deg);
+  }
+  .stamp-count{
+    background:#fff;border:3px solid var(--sun);border-radius:999px;
+    padding:6px 14px;font-weight:900;font-size:1rem;box-shadow:var(--shadow);
+    display:flex;align-items:center;gap:6px;cursor:pointer;border-style:solid;
+  }
+  .stamp-count:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(74,58,42,.14);}
+
+  /* ---------- 画面共通 ---------- */
+  .screen{display:none;flex-direction:column;flex:1;animation:pop .35s ease;}
+  .screen.active{display:flex;}
+  @keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+
+  .big-btn{
+    border:none;border-radius:var(--round);padding:20px 18px;margin-bottom:14px;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:1.35rem;color:var(--ink);
+    display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;
+    box-shadow:var(--shadow);transition:transform .08s;
+  }
+  .big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .big-btn .emoji{font-size:2.2rem;}
+  .big-btn small{display:block;font-size:.85rem;font-weight:700;opacity:.75;margin-top:2px;}
+  .btn-learn{background:#FFE39B;}
+  .btn-trace{background:#C8E6C0;}
+  .btn-quiz{background:#BFE0F0;}
+  .btn-stamp{background:#FFD3C7;}
+
+  .back-btn{
+    align-self:flex-start;background:#fff;border:3px solid var(--paper-deep);border-radius:999px;
+    padding:8px 18px;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:1rem;color:var(--ink);
+    cursor:pointer;margin-bottom:12px;box-shadow:var(--shadow);
+  }
+  .back-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+
+  h2.screen-title{font-family:'Hachi Maru Pop',cursive;font-size:1.35rem;text-align:center;margin-bottom:14px;}
+
+  /* ---------- カテゴリ ---------- */
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .cat-card{
+    border:none;border-radius:22px;padding:18px 10px;font-family:'Zen Maru Gothic',sans-serif;
+    font-weight:900;font-size:1.1rem;color:var(--ink);cursor:pointer;box-shadow:var(--shadow);
+  }
+  .cat-card:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .cat-card .emoji{font-size:2rem;display:block;margin-bottom:6px;}
+  .cat-card small{display:block;font-size:.78rem;font-weight:700;opacity:.7;margin-top:2px;}
+
+  /* ---------- おぼえるカード ---------- */
+  .kanji-card{
+    background:#fff;border-radius:30px;box-shadow:var(--shadow);
+    padding:22px 18px 18px;text-align:center;position:relative;overflow:hidden;
+  }
+  .kanji-card::before{
+    content:"";position:absolute;inset:10px;border:3px dashed var(--paper-deep);border-radius:22px;pointer-events:none;
+  }
+  .flip-zone{height:190px;display:flex;align-items:center;justify-content:center;perspective:700px;cursor:pointer;}
+  .flipper{position:relative;width:170px;height:170px;transform-style:preserve-3d;transition:transform .6s;}
+  .flipper.flipped{transform:rotateY(180deg);}
+  .face{
+    position:absolute;inset:0;border-radius:24px;display:flex;align-items:center;justify-content:center;
+    backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  }
+  .face.front{background:var(--paper-deep);font-size:5.2rem;}
+  .face.back{background:#FFF;border:4px solid var(--sun);transform:rotateY(180deg);}
+  .face.back span{font-family:'Klee One',serif;font-size:6.4rem;line-height:1;}
+  .tap-hint{font-size:.85rem;font-weight:700;color:#B08D57;margin-top:4px;}
+  .reading{font-size:1.5rem;font-weight:900;margin-top:10px;}
+  .origin{font-size:.95rem;font-weight:700;background:var(--paper);border-radius:14px;padding:8px 12px;margin-top:10px;position:relative;}
+  .word{font-size:1.05rem;font-weight:900;color:var(--hanko);margin-top:10px;}
+  .sound-btn{
+    margin-top:12px;border:none;background:var(--sky);color:#fff;font-family:'Zen Maru Gothic',sans-serif;
+    font-weight:900;font-size:1.05rem;border-radius:999px;padding:10px 26px;cursor:pointer;box-shadow:var(--shadow);position:relative;
+  }
+  .sound-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .card-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+  .nav-btn{
+    border:none;background:var(--sun);border-radius:999px;width:56px;height:56px;font-size:1.5rem;cursor:pointer;
+    box-shadow:var(--shadow);color:var(--ink);font-weight:900;
+  }
+  .nav-btn:disabled{opacity:.3;}
+  .nav-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .card-pos{font-weight:900;font-size:1rem;}
+
+  /* ---------- なぞりがき ---------- */
+  .trace-wrap{background:#fff;border-radius:30px;box-shadow:var(--shadow);padding:16px;text-align:center;}
+  .trace-info{display:flex;justify-content:center;align-items:baseline;gap:10px;margin-bottom:8px;}
+  .trace-info .emoji{font-size:1.8rem;}
+  .trace-info .yomi{font-weight:900;font-size:1.2rem;}
+  #traceBox{position:relative;width:300px;height:300px;margin:0 auto;border:4px solid var(--paper-deep);border-radius:20px;background:#FFFDF7;}
+  #traceGuide{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'Klee One',serif;font-size:13.5rem;color:rgba(74,58,42,.13);pointer-events:none;line-height:1;
+    user-select:none;
+  }
+  #traceBox::before,#traceBox::after{content:"";position:absolute;background:rgba(110,182,217,.25);pointer-events:none;}
+  #traceBox::before{left:50%;top:6px;bottom:6px;width:2px;}
+  #traceBox::after{top:50%;left:6px;right:6px;height:2px;}
+  #traceCanvas{position:absolute;inset:0;touch-action:none;border-radius:16px;}
+  .trace-tools{display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .tool-btn{
+    border:none;border-radius:999px;padding:11px 20px;font-family:'Zen Maru Gothic',sans-serif;font-weight:900;
+    font-size:1rem;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);
+  }
+  .tool-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .t-clear{background:#EEE4D4;}
+  .t-next{background:var(--sun);}
+  .t-done{background:var(--leaf);color:#fff;}
+
+  /* ---------- クイズ ---------- */
+  .quiz-q{
+    background:#fff;border-radius:30px;box-shadow:var(--shadow);padding:24px 16px;text-align:center;margin-bottom:16px;
+  }
+  .quiz-emoji{font-size:4.5rem;line-height:1;}
+  .quiz-yomi{font-size:1.4rem;font-weight:900;margin-top:8px;}
+  .quiz-ask{font-size:.95rem;font-weight:700;opacity:.75;margin-top:4px;}
+  .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .choice{
+    border:none;background:#fff;border-radius:22px;box-shadow:var(--shadow);cursor:pointer;
+    font-family:'Klee One',serif;font-size:3.2rem;padding:16px 0;color:var(--ink);transition:transform .08s;
+  }
+  .choice:active{transform:translateY(3px);}
+  .choice.correct{background:var(--leaf);color:#fff;animation:bounce .5s;}
+  .choice.wrong{background:#F3D6CE;animation:shake .4s;}
+  @keyframes bounce{0%,100%{transform:scale(1)}40%{transform:scale(1.15)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .quiz-progress{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
+  .dot{width:16px;height:16px;border-radius:50%;background:#E8DCC8;}
+  .dot.hit{background:var(--hanko);}
+  .dot.now{outline:3px solid var(--sun);outline-offset:2px;}
+  .quiz-feedback{text-align:center;font-family:'Hachi Maru Pop',cursive;font-size:1.4rem;height:2.2rem;margin-top:12px;}
+
+  /* ---------- 結果・はんこ ---------- */
+  .result-card{background:#fff;border-radius:30px;box-shadow:var(--shadow);padding:30px 20px;text-align:center;}
+  .hanko{
+    width:130px;height:130px;border-radius:50%;border:6px solid var(--hanko);color:var(--hanko);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;margin:16px auto;
+    font-family:'Klee One',serif;transform:rotate(-8deg);
+    animation:stampIn .5s cubic-bezier(.2,1.6,.4,1) both;
+  }
+  @keyframes stampIn{from{transform:scale(2.4) rotate(-8deg);opacity:0}to{transform:scale(1) rotate(-8deg);opacity:1}}
+  .hanko .h-big{font-size:3.2rem;line-height:1;}
+  .hanko .h-small{font-size:1rem;font-weight:700;}
+  .result-msg{font-family:'Hachi Maru Pop',cursive;font-size:1.5rem;}
+  .result-sub{font-weight:700;margin-top:6px;opacity:.8;}
+
+  .stamp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .stamp-slot{
+    aspect-ratio:1;border-radius:50%;border:3px dashed #E0D2BA;display:flex;align-items:center;justify-content:center;
+    background:#FFFDF7;
+  }
+  .stamp-slot.filled{
+    border:4px solid var(--hanko);color:var(--hanko);font-family:'Klee One',serif;font-size:1.9rem;
+    transform:rotate(-8deg);background:#fff;border-style:solid;
+  }
+  .stamp-note{text-align:center;font-weight:700;margin-top:16px;opacity:.8;font-size:.95rem;}
+
+  /* ---------- おいわい ---------- */
+  .confetti{position:fixed;top:-20px;font-size:1.6rem;animation:fall 2.6s linear forwards;pointer-events:none;z-index:50;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.2;}}
+
+  footer{text-align:center;font-size:.78rem;font-weight:700;opacity:.55;margin-top:auto;padding-top:18px;}
+  @media (max-width:360px){
+    #traceBox{width:260px;height:260px;}
+    #traceGuide{font-size:11.5rem;}
+    .face.back span{font-size:5.6rem;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo"><span class="mark">字</span>かんじの もり</div>
+    <button class="stamp-count" onclick="go('stamp')">🔴 <span id="stampNum">0</span></button>
+  </header>
+
+  <!-- ホーム -->
+  <section class="screen active" id="screen-home">
+    <h2 class="screen-title">きょうは なにを する?</h2>
+    <button class="big-btn btn-learn" onclick="go('cats','learn')"><span class="emoji">📖</span><span>おぼえる<small>えから かんじが うまれるよ</small></span></button>
+    <button class="big-btn btn-trace" onclick="go('cats','trace')"><span class="emoji">✏️</span><span>なぞりがき<small>ゆびで かんじを かいてみよう</small></span></button>
+    <button class="big-btn btn-quiz" onclick="startQuiz()"><span class="emoji">🎯</span><span>クイズ<small>5もん せいかいで はんこ ゲット!</small></span></button>
+    <button class="big-btn btn-stamp" onclick="go('stamp')"><span class="emoji">📕</span><span>はんこちょう<small>あつめた はんこを みてみよう</small></span></button>
+  </section>
+
+  <!-- カテゴリえらび -->
+  <section class="screen" id="screen-cats">
+    <button class="back-btn" onclick="go('home')">← もどる</button>
+    <h2 class="screen-title" id="catTitle">どれに する?</h2>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+
+  <!-- おぼえる -->
+  <section class="screen" id="screen-learn">
+    <button class="back-btn" onclick="go('cats','learn')">← もどる</button>
+    <div class="kanji-card">
+      <div class="flip-zone" onclick="flipCard()">
+        <div class="flipper" id="flipper">
+          <div class="face front" id="faceEmoji">⛰️</div>
+          <div class="face back"><span id="faceKanji">山</span></div>
+        </div>
+      </div>
+      <div class="tap-hint">👆 タップすると かんじに へんしん!</div>
+      <div class="reading" id="cardYomi">やま</div>
+      <div class="origin" id="cardOrigin">やまの かたちから できたよ</div>
+      <div class="word" id="cardWord">やまに のぼる ⛰️</div>
+      <button class="sound-btn" onclick="speakCard()">🔊 よんでみて</button>
+    </div>
+    <div class="card-nav">
+      <button class="nav-btn" id="prevBtn" onclick="moveCard(-1)">←</button>
+      <div class="card-pos" id="cardPos">1 / 5</div>
+      <button class="nav-btn" id="nextBtn" onclick="moveCard(1)">→</button>
+    </div>
+  </section>
+
+  <!-- なぞりがき -->
+  <section class="screen" id="screen-trace">
+    <button class="back-btn" onclick="go('cats','trace')">← もどる</button>
+    <div class="trace-wrap">
+      <div class="trace-info">
+        <span class="emoji" id="traceEmoji">⛰️</span>
+        <span class="yomi" id="traceYomi">やま</span>
+      </div>
+      <div id="traceBox">
+        <div id="traceGuide">山</div>
+        <canvas id="traceCanvas"></canvas>
+      </div>
+      <div class="trace-tools">
+        <button class="tool-btn t-clear" onclick="clearTrace()">🧽 けす</button>
+        <button class="tool-btn t-done" onclick="traceDone()">✨ できた!</button>
+        <button class="tool-btn t-next" onclick="nextTrace()">つぎへ →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- クイズ -->
+  <section class="screen" id="screen-quiz">
+    <button class="back-btn" onclick="go('home')">← やめる</button>
+    <div class="quiz-progress" id="quizDots"></div>
+    <div class="quiz-q">
+      <div class="quiz-emoji" id="qEmoji">⛰️</div>
+      <div class="quiz-yomi" id="qYomi">やま</div>
+      <div class="quiz-ask">どの かんじかな?</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="quiz-feedback" id="qFeedback"></div>
+  </section>
+
+  <!-- けっか -->
+  <section class="screen" id="screen-result">
+    <div class="result-card">
+      <div class="result-msg" id="resultMsg">🎉 すごい!</div>
+      <div class="hanko"><span class="h-big" id="hankoKanji">花</span><span class="h-small">ごうかく</span></div>
+      <div class="result-sub" id="resultSub">はんこを 1こ ゲットしたよ!</div>
+    </div>
+    <button class="big-btn btn-quiz" style="margin-top:18px" onclick="startQuiz()"><span class="emoji">🎯</span><span>もういっかい クイズ!</span></button>
+    <button class="big-btn btn-stamp" onclick="go('stamp')"><span class="emoji">📕</span><span>はんこちょうを みる</span></button>
+    <button class="big-btn btn-learn" onclick="go('home')"><span class="emoji">🏠</span><span>ホームに もどる</span></button>
+  </section>
+
+  <!-- はんこちょう -->
+  <section class="screen" id="screen-stamp">
+    <button class="back-btn" onclick="go('home')">← もどる</button>
+    <h2 class="screen-title">📕 はんこちょう</h2>
+    <div class="stamp-grid" id="stampGrid"></div>
+    <div class="stamp-note" id="stampNote">クイズに ごうかくすると はんこが もらえるよ!</div>
+  </section>
+
+  <footer>かんじの もり | 5さいから たのしく まなぶ かんじアプリ</footer>
+</div>
+
+<script>
+/* ================= データ ================= */
+const KANJI = [
+  // すうじ
+  {k:"一",y:"いち",e:"1️⃣",o:"ゆびを 1ぽん よこに した かたち",w:"いちご 🍓",c:"num"},
+  {k:"二",y:"に",e:"2️⃣",o:"ゆびを 2ほん ならべた かたち",w:"にほん 🇯🇵",c:"num"},
+  {k:"三",y:"さん",e:"3️⃣",o:"ゆびを 3ぼん ならべた かたち",w:"さんかく 🔺",c:"num"},
+  {k:"十",y:"じゅう",e:"🔟",o:"むすんだ ひもの かたちから できたよ",w:"じゅうえん 🪙",c:"num"},
+  // しぜん
+  {k:"山",y:"やま",e:"⛰️",o:"みっつの みねが ある やまの かたち",w:"やまに のぼる ⛰️",c:"nature"},
+  {k:"川",y:"かわ",e:"🏞️",o:"みずが ながれる かわの かたち",w:"かわで あそぶ 🐟",c:"nature"},
+  {k:"日",y:"ひ",e:"☀️",o:"まるい おひさまの かたちから できたよ",w:"おひさま ☀️",c:"nature"},
+  {k:"月",y:"つき",e:"🌙",o:"みかづきの かたちから できたよ",w:"よるの つき 🌙",c:"nature"},
+  {k:"木",y:"き",e:"🌳",o:"えだと ねっこが ある きの かたち",w:"おおきな き 🌳",c:"nature"},
+  {k:"火",y:"ひ",e:"🔥",o:"もえる ほのおの かたち",w:"ひが もえる 🔥",c:"nature"},
+  {k:"水",y:"みず",e:"💧",o:"ながれる みずの かたち",w:"みずを のむ 💧",c:"nature"},
+  {k:"花",y:"はな",e:"🌸",o:"くさかんむりは くさの めじるしだよ",w:"はなが さく 🌸",c:"nature"},
+  {k:"雨",y:"あめ",e:"☔",o:"くもから あめが ふる かたち",w:"あめの ひ ☔",c:"nature"},
+  {k:"空",y:"そら",e:"🌈",o:"おおきな あなの ように ひろい そら",w:"あおい そら 🌈",c:"nature"},
+  // からだ
+  {k:"人",y:"ひと",e:"🧍",o:"ひとが たっている よこすがた",w:"やさしい ひと 🧍",c:"body"},
+  {k:"口",y:"くち",e:"👄",o:"あけた おくちの かたち",w:"おおきな くち 👄",c:"body"},
+  {k:"目",y:"め",e:"👁️",o:"たてに した おめめの かたち",w:"めが いい 👀",c:"body"},
+  {k:"手",y:"て",e:"✋",o:"ゆびを ひろげた ての かたち",w:"てを あらう ✋",c:"body"},
+  {k:"耳",y:"みみ",e:"👂",o:"おみみの かたちから できたよ",w:"みみを すます 👂",c:"body"},
+  {k:"足",y:"あし",e:"🦶",o:"ひざから したの あしの かたち",w:"あしが はやい 🏃",c:"body"},
+  // いきもの・もの
+  {k:"犬",y:"いぬ",e:"🐶",o:"よこを むいた いぬの かたち",w:"かわいい いぬ 🐶",c:"thing"},
+  {k:"虫",y:"むし",e:"🐛",o:"にょろにょろした むしの かたち",w:"むしとり 🐛",c:"thing"},
+  {k:"貝",y:"かい",e:"🐚",o:"かいがらの かたちから できたよ",w:"かいを ひろう 🐚",c:"thing"},
+  {k:"車",y:"くるま",e:"🚗",o:"うえから みた くるまの かたち",w:"くるまに のる 🚗",c:"thing"},
+];
+const CATS = [
+  {id:"num",   name:"すうじ",   emoji:"🔢", color:"#FFE39B", note:"一・二・三…"},
+  {id:"nature",name:"しぜん",   emoji:"🌈", color:"#C8E6C0", note:"やま・かわ・そら…"},
+  {id:"body",  name:"からだ",   emoji:"🙆", color:"#BFE0F0", note:"め・くち・て…"},
+  {id:"thing", name:"いきもの", emoji:"🐶", color:"#FFD3C7", note:"いぬ・むし・くるま…"},
+];
+
+/* ================= 状態 ================= */
+let mode = "learn";           // learn | trace
+let deck = [];                // 現在のカテゴリのカード
+let cardIdx = 0;
+let flipped = false;
+let stamps = [];              // 獲得したはんこ(漢字)
+let quiz = null;
+
+/* ================= 画面遷移 ================= */
+function go(name, m){
+  if(m) mode = m;
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+name).classList.add("active");
+  if(name==="cats") renderCats();
+  if(name==="stamp") renderStamps();
+}
+
+/* ================= カテゴリ ================= */
+function renderCats(){
+  document.getElementById("catTitle").textContent = mode==="learn" ? "📖 どれを おぼえる?" : "✏️ どれを なぞる?";
+  const g = document.getElementById("catGrid");
+  g.innerHTML = "";
+  CATS.forEach(c=>{
+    const b = document.createElement("button");
+    b.className = "cat-card";
+    b.style.background = c.color;
+    b.innerHTML = `<span class="emoji">${c.emoji}</span>${c.name}<small>${c.note}</small>`;
+    b.onclick = ()=>openCat(c.id);
+    g.appendChild(b);
+  });
+}
+function openCat(id){
+  deck = KANJI.filter(k=>k.c===id);
+  cardIdx = 0;
+  if(mode==="learn"){ renderCard(); go("learn"); }
+  else { renderTrace(); go("trace"); setTimeout(fitCanvas,50); }
+}
+
+/* ================= おぼえる ================= */
+function renderCard(){
+  const k = deck[cardIdx];
+  flipped = false;
+  document.getElementById("flipper").classList.remove("flipped");
+  document.getElementById("faceEmoji").textContent = k.e;
+  document.getElementById("faceKanji").textContent = k.k;
+  document.getElementById("cardYomi").textContent = k.y;
+  document.getElementById("cardOrigin").textContent = k.o;
+  document.getElementById("cardWord").textContent = k.w;
+  document.getElementById("cardPos").textContent = (cardIdx+1)+" / "+deck.length;
+  document.getElementById("prevBtn").disabled = cardIdx===0;
+  document.getElementById("nextBtn").disabled = cardIdx===deck.length-1;
+}
+function flipCard(){
+  flipped = !flipped;
+  document.getElementById("flipper").classList.toggle("flipped", flipped);
+  if(flipped) speak(deck[cardIdx].y);
+}
+function moveCard(d){
+  cardIdx = Math.max(0, Math.min(deck.length-1, cardIdx+d));
+  renderCard();
+}
+function speakCard(){ speak(deck[cardIdx].y); }
+function speak(text){
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ja-JP"; u.rate = .85; u.pitch = 1.15;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ================= なぞりがき ================= */
+const canvas = document.getElementById("traceCanvas");
+const ctx = canvas.getContext("2d");
+let drawing = false, last = null;
+
+function fitCanvas(){
+  const box = document.getElementById("traceBox");
+  const r = box.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = r.width*dpr; canvas.height = r.height*dpr;
+  canvas.style.width = r.width+"px"; canvas.style.height = r.height+"px";
+  ctx.scale(dpr,dpr);
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  ctx.lineWidth = 14; ctx.strokeStyle = "#E2523F";
+}
+function pos(ev){
+  const r = canvas.getBoundingClientRect();
+  const p = ev.touches ? ev.touches[0] : ev;
+  return {x:p.clientX-r.left, y:p.clientY-r.top};
+}
+function startDraw(ev){ ev.preventDefault(); drawing = true; last = pos(ev); }
+function draw(ev){
+  if(!drawing) return; ev.preventDefault();
+  const p = pos(ev);
+  ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+  last = p;
+}
+function endDraw(){ drawing = false; }
+canvas.addEventListener("pointerdown",startDraw);
+canvas.addEventListener("pointermove",draw);
+window.addEventListener("pointerup",endDraw);
+canvas.addEventListener("touchstart",startDraw,{passive:false});
+canvas.addEventListener("touchmove",draw,{passive:false});
+window.addEventListener("touchend",endDraw);
+window.addEventListener("resize",()=>{ if(document.getElementById("screen-trace").classList.contains("active")) fitCanvas(); });
+
+function renderTrace(){
+  const k = deck[cardIdx];
+  document.getElementById("traceGuide").textContent = k.k;
+  document.getElementById("traceEmoji").textContent = k.e;
+  document.getElementById("traceYomi").textContent = k.y;
+  clearTrace();
+}
+function clearTrace(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
+function nextTrace(){ cardIdx = (cardIdx+1)%deck.length; renderTrace(); }
+function traceDone(){
+  speak("じょうずに かけたね!");
+  celebrate(14);
+}
+
+/* ================= クイズ ================= */
+function startQuiz(){
+  const pool = [...KANJI].sort(()=>Math.random()-.5).slice(0,5);
+  quiz = {qs:pool, idx:0, correct:0, locked:false};
+  renderQuiz(); go("quiz");
+}
+function renderQuiz(){
+  const q = quiz.qs[quiz.idx];
+  document.getElementById("qEmoji").textContent = q.e;
+  document.getElementById("qYomi").textContent = q.y;
+  document.getElementById("qFeedback").textContent = "";
+  // ドット
+  const dots = document.getElementById("quizDots");
+  dots.innerHTML = "";
+  quiz.qs.forEach((_,i)=>{
+    const d = document.createElement("div");
+    d.className = "dot" + (i<quiz.idx?" hit":"") + (i===quiz.idx?" now":"");
+    dots.appendChild(d);
+  });
+  // 選択肢:正解 + ダミー2つ
+  const others = KANJI.filter(k=>k.k!==q.k).sort(()=>Math.random()-.5).slice(0,2);
+  const opts = [q,...others].sort(()=>Math.random()-.5);
+  const box = document.getElementById("choices");
+  box.innerHTML = "";
+  quiz.locked = false;
+  opts.forEach(o=>{
+    const b = document.createElement("button");
+    b.className = "choice"; b.textContent = o.k;
+    b.onclick = ()=>answer(b, o.k===q.k);
+    box.appendChild(b);
+  });
+  speak(q.y);
+}
+function answer(btn, ok){
+  if(quiz.locked) return;
+  if(ok){
+    quiz.locked = true;
+    btn.classList.add("correct");
+    quiz.correct++;
+    document.getElementById("qFeedback").textContent = "⭕ せいかい!";
+    speak("せいかい!");
+    setTimeout(()=>{
+      quiz.idx++;
+      if(quiz.idx >= quiz.qs.length) finishQuiz();
+      else renderQuiz();
+    }, 900);
+  }else{
+    btn.classList.add("wrong");
+    btn.disabled = true;
+    document.getElementById("qFeedback").textContent = "もういちど!";
+    setTimeout(()=>btn.classList.remove("wrong"), 450);
+  }
+}
+function finishQuiz(){
+  const k = quiz.qs[Math.floor(Math.random()*quiz.qs.length)].k;
+  stamps.push(k);
+  updateStampNum();
+  document.getElementById("hankoKanji").textContent = k;
+  document.getElementById("resultMsg").textContent = "🎉 ぜんぶ せいかい!";
+  document.getElementById("resultSub").textContent = "「"+k+"」の はんこを ゲットしたよ!";
+  go("result");
+  speak("すごい!ごうかく!");
+  celebrate(24);
+}
+
+/* ================= はんこちょう ================= */
+function updateStampNum(){ document.getElementById("stampNum").textContent = stamps.length; }
+function renderStamps(){
+  const g = document.getElementById("stampGrid");
+  g.innerHTML = "";
+  const total = Math.max(8, Math.ceil(stamps.length/4)*4 + (stamps.length%4===0 && stamps.length>0 ? 4 : 0));
+  for(let i=0;i<total;i++){
+    const d = document.createElement("div");
+    if(i<stamps.length){ d.className="stamp-slot filled"; d.textContent = stamps[i]; }
+    else{ d.className="stamp-slot"; d.textContent=""; }
+    g.appendChild(d);
+  }
+  document.getElementById("stampNote").textContent =
+    stamps.length===0 ? "クイズに ごうかくすると はんこが もらえるよ!"
+    : "はんこ "+stamps.length+"こ! そのちょうし!";
+}
+
+/* ================= おいわい ================= */
+const CONF = ["🌸","⭐","🎉","💮","✨","🍓"];
+function celebrate(n){
+  for(let i=0;i<n;i++){
+    const s = document.createElement("div");
+    s.className = "confetti";
+    s.textContent = CONF[Math.floor(Math.random()*CONF.length)];
+    s.style.left = Math.random()*100+"vw";
+    s.style.animationDelay = (Math.random()*.5)+"s";
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(), 3200);
+  }
+}
+</script>
+
+<script>
+/* ===== まなびランド ブリッジ連携 ===== */
+MB.appStart('kanji');
+(function(){
+  const KEY='mb-kanji-v1';
+  let kseen=new Set(), tcount=0, catAwarded=new Set();
+  try{
+    const s=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(s){
+      stamps = s.stamps||[];
+      kseen = new Set(s.seen||[]);
+      tcount = s.tcount||0;
+      catAwarded = new Set(s.catAwarded||[]);
+      updateStampNum();
+    }
+  }catch(e){}
+  function ksave(){
+    try{ localStorage.setItem(KEY, JSON.stringify({
+      stamps, seen:[...kseen], tcount, catAwarded:[...catAwarded]
+    })); }catch(e){}
+  }
+
+  /* クイズ合格 → はんこを 中央ずかんにも登録 */
+  const _finishQuiz = finishQuiz;
+  finishQuiz = function(){
+    _finishQuiz();
+    const k = stamps[stamps.length-1];
+    MB.award('hanko', {fixed:k, rarity:'hanko', name:'「'+k+'」の はんこ', quiet:true});
+    MB.record('kanji.hanko');
+    ksave();
+  };
+
+  /* なぞりがき 3もじごとに 1シール (テーマ: どうぶつのもり) */
+  const _traceDone = traceDone;
+  traceDone = function(){
+    _traceDone();
+    tcount++;
+    MB.record('kanji.trace');
+    if(tcount%3===0) MB.award('animal', {delay:600});
+    ksave();
+  };
+
+  /* おぼえるモード: カテゴリの カードを ぜんぶ見たら 1シール */
+  const _renderCard = renderCard;
+  renderCard = function(){
+    _renderCard();
+    const k = deck[cardIdx];
+    kseen.add(k.k);
+    const cid = k.c;
+    if(!catAwarded.has(cid) && KANJI.filter(x=>x.c===cid).every(x=>kseen.has(x.k))){
+      catAwarded.add(cid);
+      MB.record('kanji.learn');
+      MB.award('animal', {delay:400});
+    }
+    ksave();
+  };
+})();
+</script>
+</body>
+</html>

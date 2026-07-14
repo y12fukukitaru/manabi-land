@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>まなびランド 🎈</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<script src="bridge.js"></script>
+<style>
+:root{
+  --sky:#79CDEF; --sun:#FFD44D; --coral:#FF7B9C; --mint:#63D6A8; --grape:#9B8CFF;
+  --ink:#2A3B5F; --cream:#FFF8E9; --card:#FFFFFF; --line:#EADFC8;
+  --r:22px; --shadow:0 6px 0 rgba(42,59,95,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","BIZ UDGothic",sans-serif;
+  background:var(--cream); color:var(--ink); min-height:100vh; user-select:none;
+  background-image:
+    radial-gradient(circle at 10% 6%, rgba(121,205,239,.16) 0 110px, transparent 111px),
+    radial-gradient(circle at 90% 16%, rgba(255,212,77,.2) 0 90px, transparent 91px),
+    radial-gradient(circle at 16% 92%, rgba(255,123,156,.13) 0 110px, transparent 111px),
+    radial-gradient(circle at 86% 88%, rgba(99,214,168,.14) 0 100px, transparent 101px);
+}
+.en{font-family:"Baloo 2","M PLUS Rounded 1c",sans-serif;}
+#wrap{max-width:560px;margin:0 auto;padding:16px 16px 60px;}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-5px) rotate(2deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+/* ---- header ---- */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.logo{font-size:24px;font-weight:800;line-height:1;}
+.logo b{display:inline-block;animation:bounce 2.6s infinite;}
+.logo .c1{color:var(--coral)}.logo .c2{color:var(--sun);text-shadow:0 1px 0 #d9a800}
+.logo .c3{color:var(--sky)}.logo .c4{color:var(--mint)}.logo .c5{color:var(--grape)}
+.badge{background:#fff;border:3px solid var(--sun);border-radius:999px;padding:6px 16px;font-weight:800;font-size:16px;box-shadow:var(--shadow);cursor:pointer;font-family:inherit;color:var(--ink);}
+.badge:active{transform:translateY(3px);box-shadow:none;}
+
+/* ---- hero ---- */
+.hero{background:linear-gradient(135deg,#FFE1A6,#FFD44D);border-radius:28px;padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow);position:relative;overflow:hidden;color:#6b4d00;}
+.hero h1{margin:0;font-size:19px;font-weight:800;}
+.hero p{margin:6px 0 0;font-size:13px;font-weight:700;opacity:.9;}
+.hero .mascots{position:absolute;right:14px;bottom:6px;font-size:34px;letter-spacing:-6px;}
+.hero .mascots span{display:inline-block;animation:float 3s infinite;}
+.hero .mascots span:nth-child(2){animation-delay:.4s}
+.hero .mascots span:nth-child(3){animation-delay:.8s}
+
+/* ---- app cards ---- */
+.grid{display:grid;gap:12px;margin-bottom:16px;}
+.app{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:var(--r);padding:14px;border:3px solid var(--line);box-shadow:var(--shadow);cursor:pointer;transition:transform .1s;text-align:left;font-family:inherit;color:var(--ink);width:100%;}
+.app:active{transform:translateY(3px);box-shadow:none;}
+.app .ic{width:60px;height:60px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;}
+.app h3{margin:0;font-size:16px;font-weight:800;}
+.app p{margin:3px 0 0;font-size:12px;color:#7c88a3;font-weight:700;}
+.app .stat{margin-top:5px;font-size:11.5px;font-weight:800;color:#b07b00;background:#FFF4D6;border-radius:99px;padding:2px 10px;display:inline-block;}
+.app .arrow{margin-left:auto;font-size:20px;color:#c8cede;}
+.app.dark{background:linear-gradient(150deg,#233457,#101B36);border-color:#101B36;color:#fff;}
+.app.dark p{color:#9fb0d8;}
+.app.dark .stat{background:rgba(255,255,255,.14);color:#FFD44D;}
+.app.dark .arrow{color:#5a6a94;}
+.app.dark .ic{background:rgba(255,255,255,.1)!important;}
+
+/* ---- sticker book button ---- */
+.bookbtn{width:100%;background:linear-gradient(135deg,#FFB5C9,var(--coral));border:none;border-radius:26px;padding:18px 20px;font-size:18px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 6px 0 #d1547a;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;text-shadow:0 1px 0 rgba(0,0,0,.12);}
+.bookbtn:active{transform:translateY(4px);box-shadow:none;}
+.bookbtn .n{background:#fff;color:var(--coral);border-radius:999px;padding:2px 12px;font-size:15px;text-shadow:none;}
+
+/* ---- parents ---- */
+.parents{margin-top:26px;background:#FBF3DF;border:2px dashed #E3D3A8;border-radius:18px;padding:14px 16px;font-size:12px;color:#8a7b52;font-weight:700;line-height:1.7;}
+.parents b{color:#6b5b31;}
+.parents button{margin-top:8px;background:#fff;border:2px solid #E3D3A8;border-radius:999px;padding:7px 16px;font-size:12px;font-weight:800;color:#8a7b52;cursor:pointer;font-family:inherit;}
+
+/* ---- app overlay (iframe) ---- */
+#appOl{position:fixed;inset:0;background:var(--cream);z-index:500;display:none;flex-direction:column;}
+#appOl.show{display:flex;}
+#appOl .bar{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#fff;border-bottom:3px solid var(--line);}
+#appOl .bar .name{font-weight:800;font-size:15px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#appOl .bar button{background:#fff;border:3px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 4px 0 rgba(42,59,95,.1);font-family:inherit;color:var(--ink);}
+#appOl .bar button:active{transform:translateY(3px);box-shadow:none;}
+#appOl iframe{flex:1;border:none;width:100%;}
+
+/* ---- sticker book overlay ---- */
+#bookOl{position:fixed;inset:0;background:rgba(42,59,95,.45);z-index:600;display:none;align-items:flex-end;justify-content:center;}
+#bookOl.show{display:flex;}
+.book{background:#FFF3F6;width:100%;max-width:560px;height:92%;border-radius:26px 26px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 0 rgba(42,59,95,.15);animation:pop .25s ease;position:relative;}
+.book::before{ /* リングとじ */
+  content:"";position:absolute;top:10px;left:24px;right:24px;height:12px;
+  background-image:radial-gradient(circle 5px at 6px 6px, #d9c0c9 4px, transparent 5px);
+  background-size:26px 12px;background-repeat:repeat-x;pointer-events:none;
+}
+.book .head{display:flex;align-items:center;justify-content:space-between;padding:26px 18px 8px;}
+.book .head h2{margin:0;font-size:19px;font-weight:800;}
+.book .head button{background:#fff;border:3px solid #F1D4DC;border-radius:999px;width:38px;height:38px;font-size:17px;font-weight:800;cursor:pointer;color:var(--ink);box-shadow:0 4px 0 rgba(42,59,95,.1);}
+.tabs{display:flex;gap:8px;padding:8px 16px 12px;overflow-x:auto;}
+.tab{flex-shrink:0;background:#fff;border:3px solid #F1D4DC;border-radius:999px;padding:8px 16px;font-weight:800;font-size:13.5px;cursor:pointer;font-family:inherit;color:var(--ink);}
+.tab.on{background:var(--coral);border-color:var(--coral);color:#fff;box-shadow:0 4px 0 #d1547a;}
+.bpage{flex:1;overflow-y:auto;padding:6px 16px 24px;display:none;-webkit-overflow-scrolling:touch;}
+.bpage.on{display:block;}
+
+/* board */
+.trayrow{display:flex;gap:8px;overflow-x:auto;padding:8px 4px 12px;min-height:66px;align-items:center;}
+.tsticker{width:52px;height:52px;flex-shrink:0;background:#fff;border:3px solid #F1D4DC;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:29px;cursor:pointer;box-shadow:0 4px 0 rgba(42,59,95,.08);}
+.tsticker.sel{border-color:var(--sun);background:#FFF7DE;transform:scale(1.08);}
+.trayempty{font-size:12.5px;color:#c79aa8;font-weight:700;padding:0 6px;}
+.board{position:relative;background:#fff;border:3px solid #F1D4DC;border-radius:22px;height:380px;overflow:hidden;
+  background-image:radial-gradient(circle at 1px 1px, #F6E3E9 1.5px, transparent 2px);background-size:22px 22px;}
+.board .hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#d8b3bf;font-weight:800;font-size:13.5px;text-align:center;padding:20px;pointer-events:none;}
+.board .pl{position:absolute;font-size:38px;cursor:pointer;filter:drop-shadow(0 2px 0 rgba(42,59,95,.15));}
+.bnote{font-size:11.5px;color:#c79aa8;font-weight:700;margin-top:8px;text-align:center;}
+
+/* zukan */
+.zhead{display:flex;align-items:center;justify-content:space-between;margin:12px 2px 8px;}
+.zhead h4{margin:0;font-size:15px;font-weight:800;}
+.zhead .pct{font-size:12px;font-weight:800;color:#b07b00;background:#FFF4D6;border-radius:99px;padding:3px 10px;}
+.zbar{height:9px;background:#F6E3E9;border-radius:99px;overflow:hidden;margin:0 2px 10px;}
+.zbar i{display:block;height:100%;background:var(--mint);border-radius:99px;transition:width .4s;}
+.zgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;margin-bottom:6px;}
+.zcell{position:relative;background:#fff;border:3px solid #F1D4DC;border-radius:14px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:26px;}
+.zcell.no{background:#F7ECEF;color:#d8b3bf;font-size:20px;font-weight:800;}
+.zcell.rare{border-color:var(--grape);}
+.zcell.sr{border-color:var(--sun);background:#FFFBEA;}
+.zcell .x{position:absolute;bottom:-4px;right:-4px;background:var(--sun);color:#6b4d00;border-radius:99px;font-size:9.5px;font-weight:800;padding:1px 5px;}
+.ztotal{background:#fff;border:3px solid #F1D4DC;border-radius:18px;padding:12px 16px;text-align:center;font-weight:800;font-size:14px;margin-bottom:6px;}
+
+/* secrets */
+.srow{display:flex;align-items:center;gap:12px;background:#fff;border:3px solid #F1D4DC;border-radius:18px;padding:10px 14px;margin-bottom:10px;}
+.srow .se{width:46px;height:46px;border-radius:14px;background:#F3EAFB;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.srow.no .se{background:#F7ECEF;color:#d8b3bf;font-weight:800;font-size:20px;}
+.srow .sn{font-size:14px;font-weight:800;}
+.srow.no .sn{color:#c79aa8;}
+.srow .sh{font-size:11.5px;color:#9aa4bd;font-weight:700;margin-top:2px;}
+
+/* records */
+.rrow{display:flex;align-items:center;gap:10px;background:#fff;border:3px solid #F1D4DC;border-radius:16px;padding:10px 14px;margin-bottom:8px;font-weight:800;font-size:14px;}
+.rrow .re{font-size:22px;width:30px;text-align:center;}
+.rrow .rn{flex:1;}
+.rrow .rv{color:var(--coral);font-size:16px;}
+.rsec{font-size:12.5px;font-weight:800;color:#c79aa8;margin:14px 4px 8px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="topbar">
+    <div class="logo">
+      <b class="c1">ま</b><b class="c2">な</b><b class="c3">び</b><b class="c4">ラ</b><b class="c5">ン</b><b class="c1">ド</b> 🎈
+    </div>
+    <button class="badge" onclick="openBook()">🎀 <span id="hdCount">0</span></button>
+  </div>
+
+  <div class="hero">
+    <h1 id="greet">きょうは なにで あそぶ？</h1>
+    <p>あそんで まなんで シールを あつめよう！</p>
+    <div class="mascots"><span>🍓</span><span>🐻</span><span>🚀</span></div>
+  </div>
+
+  <div class="grid" id="appGrid"></div>
+
+  <button class="bookbtn" onclick="openBook()">🎀 シールちょうを ひらく <span class="n" id="btnCount">0まい</span></button>
+
+  <div class="parents">
+    <b>おうちのかたへ</b><br>
+    5つのアプリの記録とシールは、この端末（ブラウザ）に自動保存されます。ブラウザの閲覧データを消すと記録も消えるためご注意ください。音声はタップ後に再生されます。<br>
+    <button onclick="resetData()">🗑 きろくを ぜんぶ リセット</button>
+  </div>
+</div>
+
+<!-- app overlay -->
+<div id="appOl">
+  <div class="bar">
+    <button onclick="closeApp()">← ホーム</button>
+    <div class="name" id="olName"></div>
+    <button onclick="openBook()">🎀 <span id="olCount">0</span></button>
+  </div>
+  <iframe id="olFrame" src="about:blank" allow="clipboard-write"></iframe>
+</div>
+
+<!-- sticker book overlay -->
+<div id="bookOl">
+  <div class="book">
+    <div class="head">
+      <h2>🎀 シールちょう</h2>
+      <button onclick="closeBook()">✕</button>
+    </div>
+    <div class="tabs">
+      <button class="tab on" data-p="board" onclick="bookTab('board')">ペタペタ</button>
+      <button class="tab" data-p="zukan" onclick="bookTab('zukan')">ずかん</button>
+      <button class="tab" data-p="secret" onclick="bookTab('secret')">ひみつ</button>
+      <button class="tab" data-p="rec" onclick="bookTab('rec')">きろく</button>
+    </div>
+
+    <div class="bpage on" id="pg-board">
+      <div class="trayrow" id="trayRow"></div>
+      <div class="board" id="board"><div class="hint" id="boardHint">うえの シールを えらんで<br>すきな ばしょに ペタッ！</div></div>
+      <div class="bnote">はったシールは ながおしで はがせるよ</div>
+    </div>
+
+    <div class="bpage" id="pg-zukan"></div>
+    <div class="bpage" id="pg-secret"></div>
+    <div class="bpage" id="pg-rec"></div>
+  </div>
+</div>
+
+<script>
+/* ================= アプリ一覧 ================= */
+const APPS=[
+  {id:"sansuu", file:"apps/sansuu.html", icon:"🍓", bg:"#FFE0E9", name:"いちごさんすう",
+   desc:"たしざん・ひきざん・かけざん・わりざん", stat:h=>"ステージ "+((h.records["sansuu.stage"]||0)+(h.records["sansuu.challenge"]||0))+"かい クリア"},
+  {id:"kanji", file:"apps/kanji.html", icon:"🌳", bg:"#D9F2D0", name:"かんじの もり",
+   desc:"かんじを おぼえて なぞって クイズ！", stat:h=>"はんこ "+(h.records["kanji.hanko"]||0)+"こ"},
+  {id:"kotoba", file:"apps/kotoba.html", icon:"📚", bg:"#E6DEFF", name:"ことばの ほんだな",
+   desc:"じゅくごカードと ミニえほん", stat:h=>"えほん "+(h.records["kotoba.book"]||0)+"さつ・クイズ "+(h.records["kotoba.quiz"]||0)+"かい"},
+  {id:"eigo", file:"apps/eigo.html", icon:"🌏", bg:"#D2EEFB", name:"えいご アドベンチャー",
+   desc:"たんご・ABC・きいて こたえる クイズ", stat:h=>"ほし "+(h.records["eigo.stars"]||0)+"こ"},
+  {id:"katachi", file:"apps/katachi.html", icon:"🚀", bg:"#2A3B5F", dark:true, name:"うちゅうの かたち たんけん",
+   desc:"かいてん・つみき・いちの ずけいクイズ", stat:h=>"ロケット "+(h.records["katachi.rocket"]||0)+"かい はっしゃ"},
+];
+
+/* ================= ホーム描画 ================= */
+function renderHome(){
+  const h=MB.load();
+  const g=document.getElementById("appGrid");
+  g.innerHTML="";
+  APPS.forEach(a=>{
+    const b=document.createElement("button");
+    b.className="app"+(a.dark?" dark":"");
+    b.innerHTML='<div class="ic" style="background:'+a.bg+'">'+a.icon+'</div>'+
+      '<div><h3>'+a.name+'</h3><p>'+a.desc+'</p><span class="stat">'+a.stat(h)+'</span></div>'+
+      '<div class="arrow">›</div>';
+    b.onclick=()=>openApp(a);
+    g.appendChild(b);
+  });
+  const n=MB.totalStickers();
+  document.getElementById("hdCount").textContent=n;
+  document.getElementById("btnCount").textContent=n+"まい";
+  document.getElementById("olCount").textContent=n;
+  const greets=["きょうは なにで あそぶ？","シール あつめよう〜！","きみなら できるよ！","まいにち ちょっとずつ！"];
+  document.getElementById("greet").textContent=greets[new Date().getDate()%greets.length];
+}
+
+/* ================= アプリ起動 ================= */
+let curApp=null;
+function openApp(a){
+  curApp=a;
+  document.getElementById("olName").textContent=a.icon+" "+a.name;
+  document.getElementById("olFrame").src=a.file;
+  document.getElementById("appOl").classList.add("show");
+}
+function closeApp(){
+  document.getElementById("appOl").classList.remove("show");
+  document.getElementById("olFrame").src="about:blank";
+  curApp=null;
+  renderHome();
+}
+
+/* ================= シールちょう ================= */
+function openBook(){
+  renderBook();
+  document.getElementById("bookOl").classList.add("show");
+}
+function closeBook(){ document.getElementById("bookOl").classList.remove("show"); }
+document.getElementById("bookOl").addEventListener("click",e=>{ if(e.target.id==="bookOl") closeBook(); });
+function bookTab(p){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===p));
+  document.querySelectorAll(".bpage").forEach(x=>x.classList.remove("on"));
+  document.getElementById("pg-"+p).classList.add("on");
+}
+function renderBook(){ renderBoard(); renderZukan(); renderSecrets(); renderRecords(); }
+
+/* ---- ペタペタボード ---- */
+let selTray=null;
+function renderBoard(){
+  const h=MB.load();
+  const row=document.getElementById("trayRow");
+  row.innerHTML="";
+  if(!h.tray.length){
+    row.innerHTML='<span class="trayempty">アプリで あそぶと ここに シールが たまるよ！</span>';
+  }else{
+    h.tray.slice().reverse().forEach((e,ri)=>{
+      const i=h.tray.length-1-ri;
+      const d=document.createElement("div");
+      d.className="tsticker"+(selTray===i?" sel":"");
+      d.textContent=e;
+      d.onclick=()=>{ selTray=(selTray===i?null:i); renderBoard(); };
+      row.appendChild(d);
+    });
+  }
+  const bd=document.getElementById("board");
+  bd.querySelectorAll(".pl").forEach(x=>x.remove());
+  document.getElementById("boardHint").style.display=(h.placed.length||h.tray.length)?"none":"flex";
+  h.placed.forEach((p,i)=>{
+    const d=document.createElement("div");
+    d.className="pl"; d.textContent=p.e;
+    d.style.left=p.x+"%"; d.style.top=p.y+"%";
+    d.style.transform="rotate("+p.r+"deg)";
+    let timer=null;
+    const hold=()=>{ timer=setTimeout(()=>{
+      const h2=MB.load(); h2.placed.splice(i,1); h2.tray.push(p.e); MB.save();
+      selTray=null; renderBoard(); MB.toast("シールを はがしたよ");
+    },650); };
+    const cancel=()=>clearTimeout(timer);
+    d.addEventListener("mousedown",hold); d.addEventListener("mouseup",cancel); d.addEventListener("mouseleave",cancel);
+    d.addEventListener("touchstart",hold,{passive:true}); d.addEventListener("touchend",cancel);
+    bd.appendChild(d);
+  });
+}
+document.getElementById("board").addEventListener("click",function(e){
+  if(selTray===null) return;
+  if(e.target.classList.contains("pl")) return;
+  const h=MB.load();
+  const r=this.getBoundingClientRect();
+  const x=((e.clientX-r.left)/r.width)*100, y=((e.clientY-r.top)/r.height)*100;
+  const st=h.tray.splice(selTray,1)[0];
+  h.placed.push({e:st, x:Math.min(Math.max(x-5,0),90), y:Math.min(Math.max(y-5,0),88), r:Math.round(Math.random()*30-15)});
+  MB.save();
+  selTray=null; renderBoard();
+  MB.toast("ペタッ！ 🎀");
+});
+
+/* ---- ずかん ---- */
+function tierOf(t,e){ if(t.s.includes(e))return"sr"; if(t.r.includes(e))return"rare"; return""; }
+function renderZukan(){
+  const h=MB.load();
+  const pg=document.getElementById("pg-zukan");
+  pg.innerHTML="";
+  const cat=MB.catalogEmojis();
+  const gotAll=cat.filter(e=>h.owned[e]).length;
+  const tot=document.createElement("div");
+  tot.className="ztotal";
+  tot.innerHTML="ずかん "+gotAll+" / "+cat.length+"しゅるい 🎉 ぜんぶで "+MB.totalStickers()+"まい";
+  pg.appendChild(tot);
+  MB.THEMES.forEach(t=>{
+    const list=[...t.n,...t.r,...t.s];
+    const got=list.filter(e=>h.owned[e]).length;
+    const hd=document.createElement("div");
+    hd.className="zhead";
+    hd.innerHTML="<h4>"+t.icon+" "+t.name+"</h4><span class='pct'>"+got+" / "+list.length+"</span>";
+    pg.appendChild(hd);
+    const bar=document.createElement("div");
+    bar.className="zbar"; bar.innerHTML="<i style='width:"+Math.round(got/list.length*100)+"%'></i>";
+    pg.appendChild(bar);
+    const grid=document.createElement("div");
+    grid.className="zgrid";
+    list.forEach(e=>{
+      const c=document.createElement("div");
+      const n=h.owned[e]||0;
+      if(n){ c.className="zcell "+tierOf(t,e); c.textContent=e;
+        if(n>1) c.innerHTML=e+"<span class='x'>×"+n+"</span>"; }
+      else{ c.className="zcell no"; c.textContent="？"; }
+      grid.appendChild(c);
+    });
+    pg.appendChild(grid);
+  });
+  /* かんじはんこ */
+  const gotH=MB.HANKO.list.filter(e=>h.owned[e]).length;
+  const hd=document.createElement("div");
+  hd.className="zhead";
+  hd.innerHTML="<h4>"+MB.HANKO.icon+" "+MB.HANKO.name+"</h4><span class='pct'>"+gotH+" / "+MB.HANKO.list.length+"</span>";
+  pg.appendChild(hd);
+  const bar=document.createElement("div");
+  bar.className="zbar"; bar.innerHTML="<i style='width:"+Math.round(gotH/MB.HANKO.list.length*100)+"%'></i>";
+  pg.appendChild(bar);
+  const grid=document.createElement("div");
+  grid.className="zgrid";
+  MB.HANKO.list.forEach(e=>{
+    const c=document.createElement("div");
+    const n=h.owned[e]||0;
+    if(n){ c.className="zcell"; c.style.color="#E2523F"; c.style.fontWeight="800"; c.textContent=e;
+      if(n>1) c.innerHTML=e+"<span class='x'>×"+n+"</span>"; }
+    else{ c.className="zcell no"; c.textContent="？"; }
+    grid.appendChild(c);
+  });
+  pg.appendChild(grid);
+  /* カタログ外のシール */
+  const extras=Object.keys(h.owned).filter(e=>!cat.includes(e)&&!MB.HANKO.list.includes(e)&&!MB.SECRETS.some(s=>s.e===e));
+  if(extras.length){
+    const hd2=document.createElement("div");
+    hd2.className="zhead"; hd2.innerHTML="<h4>🎁 スペシャル</h4><span class='pct'>"+extras.length+"</span>";
+    pg.appendChild(hd2);
+    const g2=document.createElement("div"); g2.className="zgrid";
+    extras.forEach(e=>{
+      const c=document.createElement("div"); c.className="zcell";
+      const n=h.owned[e];
+      c.innerHTML=n>1 ? e+"<span class='x'>×"+n+"</span>" : e;
+      g2.appendChild(c);
+    });
+    pg.appendChild(g2);
+  }
+}
+
+/* ---- ひみつ ---- */
+function renderSecrets(){
+  const h=MB.load();
+  const pg=document.getElementById("pg-secret");
+  pg.innerHTML="";
+  const got=MB.SECRETS.filter(s=>h.owned[s.e]).length;
+  const tot=document.createElement("div");
+  tot.className="ztotal";
+  tot.textContent="ひみつのシール "+got+" / "+MB.SECRETS.length;
+  pg.appendChild(tot);
+  MB.SECRETS.forEach(s=>{
+    const own=!!h.owned[s.e];
+    const d=document.createElement("div");
+    d.className="srow"+(own?"":" no");
+    d.innerHTML='<div class="se">'+(own?s.e:"？")+'</div>'+
+      '<div><div class="sn">'+(own?s.name:"？？？")+'</div>'+
+      '<div class="sh">'+s.hint+'</div></div>';
+    pg.appendChild(d);
+  });
+}
+
+/* ---- きろく ---- */
+function renderRecords(){
+  const h=MB.load(), r=h.records;
+  const pg=document.getElementById("pg-rec");
+  const v=k=>r[k]||0;
+  const rows=[
+    ["🎀","あつめた シール", MB.totalStickers()+"まい"],
+    ["⭐","あつめた ほし", MB.totalStars()+"こ"],
+    ["sec","🍓 いちごさんすう"],
+    ["🧮","ステージ クリア", v("sansuu.stage")+"かい"],
+    ["🌟","チャレンジ クリア", v("sansuu.challenge")+"かい"],
+    ["sec","🌳 かんじの もり"],
+    ["🈴","かんじの はんこ", v("kanji.hanko")+"こ"],
+    ["✏️","なぞりがき した もじ", v("kanji.trace")+"もじ"],
+    ["sec","📚 ことばの ほんだな"],
+    ["📖","よみきった えほん", v("kotoba.book")+"さつ"],
+    ["❓","クイズ クリア", v("kotoba.quiz")+"かい"],
+    ["sec","🌏 えいご アドベンチャー"],
+    ["🎁","えいごの シール", v("eigo.sticker")+"まい"],
+    ["🅰️","ABC コンプリート", r["eigo.abc"]?"できた！":"まだ"],
+    ["sec","🚀 うちゅうの かたち たんけん"],
+    ["🛰️","あそんだ ラウンド", v("katachi.round")+"かい"],
+    ["🏆","パーフェクト", v("katachi.perfect")+"かい"],
+    ["🚀","ロケット はっしゃ", v("katachi.rocket")+"かい"],
+  ];
+  pg.innerHTML="";
+  rows.forEach(x=>{
+    if(x[0]==="sec"){
+      const s=document.createElement("div"); s.className="rsec"; s.textContent=x[1];
+      pg.appendChild(s); return;
+    }
+    const d=document.createElement("div");
+    d.className="rrow";
+    d.innerHTML='<div class="re">'+x[0]+'</div><div class="rn">'+x[1]+'</div><div class="rv">'+x[2]+'</div>';
+    pg.appendChild(d);
+  });
+}
+
+/* ================= リセット ================= */
+function resetData(){
+  if(!confirm("シール・はんこ・きろくを ぜんぶ けします。よろしいですか？")) return;
+  if(!confirm("ほんとうに けしますか？ もとに もどせません。")) return;
+  MB.resetAll();
+  renderHome();
+  MB.toast("きろくを リセットしました");
+}
+
+/* ================= 更新イベント ================= */
+window.addEventListener("message", e=>{
+  const d=e.data||{};
+  if(d.type==="mb-refresh"){ MB.load(); renderHome(); if(document.getElementById("bookOl").classList.contains("show")) renderBook(); }
+  if(d.type==="mb-open-book"){ openBook(); }
+});
+window.addEventListener("storage", ()=>{ renderHome(); });
+window.addEventListener("mb-refresh", ()=>{ renderHome(); });
+
+renderHome();
+if(location.hash==="#book") openBook();
+</script>
+</body>
+</html>

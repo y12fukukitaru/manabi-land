@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script src="../bridge.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ことばの ほんだな 📚 - 5さいから まなべる じゅくごちょう</title>
+<link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Zen+Maru+Gothic:wght@500;700;900&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FDF3E3;
+    --paper-deep:#F3E2C4;
+    --ink:#4A3A2A;
+    --berry:#D9534F;
+    --honey:#F5A623;
+    --leaf:#7FB77E;
+    --sky:#6EB6D9;
+    --lav:#B79CD8;
+    --shelf:#C68B59;
+    --shadow:0 6px 0 rgba(74,58,42,.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:'Zen Maru Gothic',sans-serif;color:var(--ink);
+    background:
+      radial-gradient(circle at 90% 6%, rgba(245,166,35,.18) 0 100px, transparent 101px),
+      radial-gradient(circle at 8% 92%, rgba(183,156,216,.16) 0 110px, transparent 111px),
+      var(--paper);
+    display:flex;justify-content:center;min-height:100dvh;
+  }
+  #app{width:100%;max-width:520px;padding:16px 16px 28px;display:flex;flex-direction:column;min-height:100dvh;}
+
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .logo{font-family:'Hachi Maru Pop',cursive;font-size:1.4rem;display:flex;align-items:center;gap:8px;}
+  .logo .mark{
+    width:44px;height:44px;border-radius:12px;background:var(--berry);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+    box-shadow:0 4px 0 rgba(74,58,42,.18);transform:rotate(-5deg);
+  }
+  .star-count{
+    background:#fff;border:3px solid var(--honey);border-radius:999px;padding:6px 14px;
+    font-weight:900;font-size:1rem;box-shadow:var(--shadow);cursor:pointer;display:flex;gap:6px;align-items:center;
+  }
+  .star-count:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(74,58,42,.14);}
+
+  .screen{display:none;flex-direction:column;flex:1;animation:pop .35s ease;}
+  .screen.active{display:flex;}
+  @keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+
+  h2.screen-title{font-family:'Hachi Maru Pop',cursive;font-size:1.3rem;text-align:center;margin-bottom:14px;}
+
+  .big-btn{
+    border:none;border-radius:26px;padding:20px 18px;margin-bottom:14px;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:1.3rem;color:var(--ink);
+    display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;box-shadow:var(--shadow);
+  }
+  .big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .big-btn .emoji{font-size:2.2rem;}
+  .big-btn small{display:block;font-size:.85rem;font-weight:700;opacity:.75;margin-top:2px;}
+  .b-card{background:#FFE39B;}
+  .b-quiz{background:#BFE0F0;}
+  .b-book{background:#E3D3F5;}
+  .b-shelf{background:#FFD3C7;}
+
+  .back-btn{
+    align-self:flex-start;background:#fff;border:3px solid var(--paper-deep);border-radius:999px;
+    padding:8px 18px;font-weight:900;font-size:1rem;color:var(--ink);cursor:pointer;margin-bottom:12px;
+    box-shadow:var(--shadow);font-family:'Zen Maru Gothic',sans-serif;
+  }
+  .back-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .cat-card{
+    border:none;border-radius:22px;padding:18px 10px;font-weight:900;font-size:1.1rem;color:var(--ink);
+    cursor:pointer;box-shadow:var(--shadow);font-family:'Zen Maru Gothic',sans-serif;
+  }
+  .cat-card:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .cat-card .emoji{font-size:2rem;display:block;margin-bottom:6px;}
+  .cat-card small{display:block;font-size:.78rem;font-weight:700;opacity:.7;margin-top:2px;}
+
+  /* ---------- ことばカード ---------- */
+  .word-card{
+    background:#fff;border-radius:30px;box-shadow:var(--shadow);padding:24px 18px 18px;text-align:center;
+    position:relative;overflow:hidden;
+  }
+  .word-card::before{content:"";position:absolute;inset:10px;border:3px dashed var(--paper-deep);border-radius:22px;pointer-events:none;}
+  .wc-emoji{font-size:4.6rem;line-height:1.1;}
+  .wc-word{margin-top:8px;}
+  .wc-word ruby{font-family:'Klee One',serif;font-size:3.6rem;line-height:1.15;}
+  .wc-word rt{font-family:'Zen Maru Gothic',sans-serif;font-size:1.05rem;font-weight:900;color:var(--berry);}
+  .furi-toggle{
+    margin-top:6px;border:none;background:var(--paper);border-radius:999px;padding:6px 16px;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:.85rem;color:var(--ink);cursor:pointer;
+  }
+  .hide-furi rt{visibility:hidden;}
+  .wc-sentence{margin-top:12px;font-weight:900;font-size:1.15rem;background:var(--paper);border-radius:14px;padding:10px 12px;line-height:1.9;}
+  .wc-sentence ruby rt{font-size:.7rem;font-weight:700;color:var(--berry);}
+  .sound-btn{
+    margin-top:12px;border:none;background:var(--sky);color:#fff;font-weight:900;font-size:1.05rem;
+    border-radius:999px;padding:10px 26px;cursor:pointer;box-shadow:var(--shadow);font-family:'Zen Maru Gothic',sans-serif;
+  }
+  .sound-btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .card-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+  .nav-btn{
+    border:none;background:var(--honey);border-radius:999px;width:56px;height:56px;font-size:1.5rem;
+    cursor:pointer;box-shadow:var(--shadow);color:#fff;font-weight:900;
+  }
+  .nav-btn:disabled{opacity:.3;}
+  .nav-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .card-pos{font-weight:900;}
+
+  /* ---------- クイズ ---------- */
+  .quiz-progress{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
+  .dot{width:16px;height:16px;border-radius:50%;background:#E8DCC8;}
+  .dot.hit{background:var(--berry);}
+  .dot.now{outline:3px solid var(--honey);outline-offset:2px;}
+  .quiz-q{background:#fff;border-radius:30px;box-shadow:var(--shadow);padding:22px 16px;text-align:center;margin-bottom:16px;}
+  .q-emoji{font-size:3.6rem;line-height:1;}
+  .q-word{font-family:'Klee One',serif;font-size:3rem;margin-top:6px;}
+  .q-ask{font-size:.95rem;font-weight:700;opacity:.75;margin-top:6px;}
+  .choices{display:grid;grid-template-columns:1fr;gap:12px;}
+  .choice{
+    border:none;background:#fff;border-radius:20px;box-shadow:var(--shadow);cursor:pointer;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:1.5rem;padding:14px 0;color:var(--ink);
+  }
+  .choice:active{transform:translateY(3px);}
+  .choice.correct{background:var(--leaf);color:#fff;animation:bounce .5s;}
+  .choice.wrong{background:#F3D6CE;animation:shake .4s;}
+  @keyframes bounce{0%,100%{transform:scale(1)}40%{transform:scale(1.08)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+  .quiz-feedback{text-align:center;font-family:'Hachi Maru Pop',cursive;font-size:1.4rem;height:2.2rem;margin-top:12px;}
+
+  /* ---------- 結果 ---------- */
+  .result-card{background:#fff;border-radius:30px;box-shadow:var(--shadow);padding:30px 20px;text-align:center;}
+  .result-msg{font-family:'Hachi Maru Pop',cursive;font-size:1.5rem;}
+  .result-star{font-size:4rem;animation:starIn .6s cubic-bezier(.2,1.6,.4,1) both;}
+  @keyframes starIn{from{transform:scale(2.6);opacity:0}to{transform:scale(1);opacity:1}}
+  .result-sub{font-weight:700;margin-top:6px;opacity:.85;}
+
+  /* ---------- えほん ---------- */
+  .book-list{display:flex;flex-direction:column;gap:12px;}
+  .book-item{
+    border:none;border-radius:22px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;
+    box-shadow:var(--shadow);font-family:'Zen Maru Gothic',sans-serif;color:var(--ink);text-align:left;
+  }
+  .book-item:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,58,42,.14);}
+  .book-item .cover{font-size:2.4rem;}
+  .book-item .b-title{font-weight:900;font-size:1.15rem;}
+  .book-item small{display:block;font-weight:700;font-size:.82rem;opacity:.75;margin-top:2px;}
+  .book-item .done-mark{margin-left:auto;font-size:1.4rem;}
+
+  .page-card{background:#fff;border-radius:30px;box-shadow:var(--shadow);padding:24px 20px;text-align:center;min-height:340px;display:flex;flex-direction:column;}
+  .pg-scene{font-size:4.6rem;line-height:1.15;}
+  .pg-text{margin-top:16px;font-weight:900;font-size:1.5rem;line-height:2.4;text-align:center;}
+  .pg-text ruby{font-family:'Klee One',serif;}
+  .pg-text rt{font-size:.78rem;font-weight:700;color:var(--berry);font-family:'Zen Maru Gothic',sans-serif;}
+  .pg-text .jword{
+    background:#FFF1C9;border-radius:8px;padding:0 4px;border-bottom:3px solid var(--honey);cursor:pointer;
+  }
+  .pg-hint{font-size:.82rem;font-weight:700;opacity:.65;margin-top:auto;padding-top:12px;}
+  .page-nav{display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+
+  /* ---------- ほんだな ---------- */
+  .shelf-board{background:#FBF0DC;border-radius:24px;box-shadow:var(--shadow);padding:18px 14px 8px;}
+  .shelf-row{display:flex;gap:8px;align-items:flex-end;min-height:74px;padding:0 6px;}
+  .shelf-plank{height:12px;background:var(--shelf);border-radius:6px;margin:0 0 14px;box-shadow:0 3px 0 rgba(74,58,42,.15);}
+  .mini-book{
+    width:40px;height:62px;border-radius:6px 6px 3px 3px;display:flex;align-items:center;justify-content:center;
+    font-size:1.25rem;color:#fff;box-shadow:inset -4px 0 0 rgba(0,0,0,.12);animation:pop .4s ease;
+  }
+  .shelf-note{text-align:center;font-weight:700;margin-top:14px;opacity:.8;font-size:.95rem;}
+  .learned-list{margin-top:16px;background:#fff;border-radius:20px;box-shadow:var(--shadow);padding:14px;}
+  .learned-list h3{font-size:1rem;text-align:center;margin-bottom:8px;}
+  .learned-words{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .lw{
+    background:var(--paper);border-radius:999px;padding:5px 12px;font-weight:900;font-size:1rem;
+    font-family:'Klee One',serif;border:2px solid var(--paper-deep);
+  }
+  .lw.got{border-color:var(--honey);background:#FFF1C9;}
+
+  .confetti{position:fixed;top:-20px;font-size:1.6rem;animation:fall 2.6s linear forwards;pointer-events:none;z-index:50;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.2;}}
+
+  footer{text-align:center;font-size:.78rem;font-weight:700;opacity:.55;margin-top:auto;padding-top:18px;}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo"><span class="mark">📚</span>ことばの ほんだな</div>
+    <button class="star-count" onclick="go('shelf')">⭐ <span id="starNum">0</span></button>
+  </header>
+
+  <!-- ホーム -->
+  <section class="screen active" id="screen-home">
+    <h2 class="screen-title">きょうは なにを よむ?</h2>
+    <button class="big-btn b-card" onclick="go('cats','card')"><span class="emoji">🃏</span><span>ことばカード<small>じゅくごを ふりがなで おぼえよう</small></span></button>
+    <button class="big-btn b-quiz" onclick="startQuiz()"><span class="emoji">🎯</span><span>よみかたクイズ<small>5もん せいかいで ⭐ ゲット!</small></span></button>
+    <button class="big-btn b-book" onclick="go('books')"><span class="emoji">📖</span><span>ミニえほん<small>おぼえた ことばで ほんを よもう</small></span></button>
+    <button class="big-btn b-shelf" onclick="go('shelf')"><span class="emoji">🏆</span><span>ほんだな<small>よんだ ほんが ならんでいくよ</small></span></button>
+  </section>
+
+  <!-- カテゴリ -->
+  <section class="screen" id="screen-cats">
+    <button class="back-btn" onclick="go('home')">← もどる</button>
+    <h2 class="screen-title">🃏 どの ことばに する?</h2>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+
+  <!-- ことばカード -->
+  <section class="screen" id="screen-card">
+    <button class="back-btn" onclick="go('cats')">← もどる</button>
+    <div class="word-card" id="wordCard">
+      <div class="wc-emoji" id="wcEmoji">🏫</div>
+      <div class="wc-word" id="wcWord"></div>
+      <button class="furi-toggle" onclick="toggleFuri()" id="furiBtn">🙈 ふりがなを かくす</button>
+      <div class="wc-sentence" id="wcSentence"></div>
+      <button class="sound-btn" onclick="speakCard()">🔊 よんでみて</button>
+    </div>
+    <div class="card-nav">
+      <button class="nav-btn" id="prevBtn" onclick="moveCard(-1)">←</button>
+      <div class="card-pos" id="cardPos">1 / 6</div>
+      <button class="nav-btn" id="nextBtn" onclick="moveCard(1)">→</button>
+    </div>
+  </section>
+
+  <!-- クイズ -->
+  <section class="screen" id="screen-quiz">
+    <button class="back-btn" onclick="go('home')">← やめる</button>
+    <div class="quiz-progress" id="quizDots"></div>
+    <div class="quiz-q">
+      <div class="q-emoji" id="qEmoji">🏫</div>
+      <div class="q-word" id="qWord">学校</div>
+      <div class="q-ask">なんて よむかな?</div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="quiz-feedback" id="qFeedback"></div>
+  </section>
+
+  <!-- けっか -->
+  <section class="screen" id="screen-result">
+    <div class="result-card">
+      <div class="result-msg" id="resultMsg">🎉 ぜんぶ よめた!</div>
+      <div class="result-star">⭐</div>
+      <div class="result-sub" id="resultSub">ほしを 1こ ゲット!</div>
+    </div>
+    <button class="big-btn b-book" style="margin-top:18px" onclick="go('books')"><span class="emoji">📖</span><span>えほんを よんでみる</span></button>
+    <button class="big-btn b-quiz" onclick="startQuiz()"><span class="emoji">🎯</span><span>もういっかい クイズ!</span></button>
+    <button class="big-btn b-shelf" onclick="go('home')"><span class="emoji">🏠</span><span>ホームに もどる</span></button>
+  </section>
+
+  <!-- えほんリスト -->
+  <section class="screen" id="screen-books">
+    <button class="back-btn" onclick="go('home')">← もどる</button>
+    <h2 class="screen-title">📖 どの えほんを よむ?</h2>
+    <div class="book-list" id="bookList"></div>
+  </section>
+
+  <!-- えほんページ -->
+  <section class="screen" id="screen-read">
+    <button class="back-btn" onclick="go('books')">← えほんを えらぶ</button>
+    <div class="page-card">
+      <div class="pg-scene" id="pgScene">🌅</div>
+      <div class="pg-text" id="pgText"></div>
+      <div class="pg-hint">👆 きいろの ことばを タップすると よんでくれるよ</div>
+    </div>
+    <div class="page-nav">
+      <button class="nav-btn" id="pgPrev" onclick="movePage(-1)">←</button>
+      <div class="card-pos" id="pgPos">1 / 4</div>
+      <button class="nav-btn" id="pgNext" onclick="movePage(1)">→</button>
+    </div>
+  </section>
+
+  <!-- ほんだな -->
+  <section class="screen" id="screen-shelf">
+    <button class="back-btn" onclick="go('home')">← もどる</button>
+    <h2 class="screen-title">🏆 わたしの ほんだな</h2>
+    <div class="shelf-board" id="shelfBoard"></div>
+    <div class="shelf-note" id="shelfNote"></div>
+    <div class="learned-list">
+      <h3>よめるようになった ことば</h3>
+      <div class="learned-words" id="learnedWords"></div>
+    </div>
+  </section>
+
+  <footer>ことばの ほんだな | じゅくごを おぼえて えほんを よもう</footer>
+</div>
+
+<script>
+/* ================= ことばデータ ================= */
+/* s: 例文セグメント [ふつうの文, {w,r}(熟語), ...] */
+const WORDS = [
+  // がっこう
+  {w:"学校",r:"がっこう",e:"🏫",c:"school",s:["あさ、",{w:"学校",r:"がっこう"},"へ いくよ"]},
+  {w:"先生",r:"せんせい",e:"👩‍🏫",c:"school",s:[{w:"先生",r:"せんせい"},"が えほんを よんでくれた"]},
+  {w:"友達",r:"ともだち",e:"🤝",c:"school",s:[{w:"友達",r:"ともだち"},"と おにごっこを した"]},
+  {w:"教室",r:"きょうしつ",e:"🪑",c:"school",s:[{w:"教室",r:"きょうしつ"},"で おえかきを するよ"]},
+  {w:"給食",r:"きゅうしょく",e:"🍛",c:"school",s:["きょうの ",{w:"給食",r:"きゅうしょく"},"は カレーだ!"]},
+  {w:"遠足",r:"えんそく",e:"🎒",c:"school",s:["あしたは たのしみな ",{w:"遠足",r:"えんそく"},"!"]},
+  // のりもの
+  {w:"電車",r:"でんしゃ",e:"🚃",c:"vehicle",s:[{w:"電車",r:"でんしゃ"},"に のって おでかけ"]},
+  {w:"自動車",r:"じどうしゃ",e:"🚗",c:"vehicle",s:["あかい ",{w:"自動車",r:"じどうしゃ"},"が はしる"]},
+  {w:"飛行機",r:"ひこうき",e:"✈️",c:"vehicle",s:[{w:"飛行機",r:"ひこうき"},"が そらを とぶ"]},
+  {w:"新幹線",r:"しんかんせん",e:"🚄",c:"vehicle",s:[{w:"新幹線",r:"しんかんせん"},"は とっても はやい"]},
+  {w:"消防車",r:"しょうぼうしゃ",e:"🚒",c:"vehicle",s:[{w:"消防車",r:"しょうぼうしゃ"},"が かけつけた"]},
+  {w:"救急車",r:"きゅうきゅうしゃ",e:"🚑",c:"vehicle",s:[{w:"救急車",r:"きゅうきゅうしゃ"},"の サイレンが きこえる"]},
+  // しぜん・てんき
+  {w:"天気",r:"てんき",e:"🌤️",c:"nature",s:["きょうは いい ",{w:"天気",r:"てんき"},"だね"]},
+  {w:"太陽",r:"たいよう",e:"☀️",c:"nature",s:[{w:"太陽",r:"たいよう"},"が ぴかぴか ひかる"]},
+  {w:"花火",r:"はなび",e:"🎆",c:"nature",s:["なつまつりで ",{w:"花火",r:"はなび"},"を みたよ"]},
+  {w:"公園",r:"こうえん",e:"🛝",c:"nature",s:[{w:"公園",r:"こうえん"},"の すべりだいで あそぶ"]},
+  {w:"虹",r:"にじ",e:"🌈",c:"nature",s:["あめの あとに ",{w:"虹",r:"にじ"},"が でた"]},
+  {w:"雪",r:"ゆき",e:"⛄",c:"nature",s:[{w:"雪",r:"ゆき"},"で だるまを つくった"]},
+  // どうぶつ・たべもの
+  {w:"動物",r:"どうぶつ",e:"🦁",c:"animal",s:[{w:"動物",r:"どうぶつ"},"えんに いきたいな"]},
+  {w:"子犬",r:"こいぬ",e:"🐶",c:"animal",s:[{w:"子犬",r:"こいぬ"},"が しっぽを ふるよ"]},
+  {w:"金魚",r:"きんぎょ",e:"🐠",c:"animal",s:["まつりで ",{w:"金魚",r:"きんぎょ"},"すくいを した"]},
+  {w:"野菜",r:"やさい",e:"🥕",c:"animal",s:[{w:"野菜",r:"やさい"},"を たべると げんきに なる"]},
+  {w:"果物",r:"くだもの",e:"🍎",c:"animal",s:["あまい ",{w:"果物",r:"くだもの"},"が だいすき"]},
+  {w:"卵",r:"たまご",e:"🥚",c:"animal",s:[{w:"卵",r:"たまご"},"やきを つくったよ"]},
+];
+const CATS = [
+  {id:"school", name:"がっこう", emoji:"🏫", color:"#FFE39B", note:"せんせい・きゅうしょく…"},
+  {id:"vehicle",name:"のりもの", emoji:"🚃", color:"#BFE0F0", note:"でんしゃ・ひこうき…"},
+  {id:"nature", name:"そと・てんき", emoji:"🌈", color:"#C8E6C0", note:"たいよう・はなび…"},
+  {id:"animal", name:"どうぶつ・たべもの", emoji:"🐶", color:"#FFD3C7", note:"こいぬ・くだもの…"},
+];
+
+/* ================= ミニえほん ================= */
+/* ページ: scene(絵文字) + seg(文セグメント。{w,r}は熟語ハイライト) */
+const BOOKS = [
+  {id:"ensoku", title:"たのしい えんそく", cover:"🎒", color:"#F5A623", note:"がっこうの ことばが でてくるよ",
+   pages:[
+    {scene:"🌅🏫", seg:["きょうは まちにまった ",{w:"遠足",r:"えんそく"},"。",{w:"学校",r:"がっこう"},"に あつまった。"]},
+    {scene:"🚌🎶", seg:["バスの なかで ",{w:"先生",r:"せんせい"},"と うたを うたった。"]},
+    {scene:"🛝🤝", seg:[{w:"公園",r:"こうえん"},"に ついたら、",{w:"友達",r:"ともだち"},"と かけっこ!"]},
+    {scene:"🍙🌤️", seg:["いい ",{w:"天気",r:"てんき"},"の したで おにぎりを たべた。おいしいね!"]},
+   ]},
+  {id:"norimono", title:"のりもの だいすき", cover:"🚄", color:"#6EB6D9", note:"のりものの ことばが でてくるよ",
+   pages:[
+    {scene:"🚃🌅", seg:["あさいちばんの ",{w:"電車",r:"でんしゃ"},"に のった。"]},
+    {scene:"🚄💨", seg:["えきで ",{w:"新幹線",r:"しんかんせん"},"を みた。はやーい!"]},
+    {scene:"🚒🚑", seg:[{w:"消防車",r:"しょうぼうしゃ"},"と ",{w:"救急車",r:"きゅうきゅうしゃ"},"が ならんで はしる。"]},
+    {scene:"✈️🌈", seg:["そらには ",{w:"飛行機",r:"ひこうき"},"。どこまで とんでいくのかな?"]},
+   ]},
+  {id:"natsu", title:"なつの よる", cover:"🎆", color:"#B79CD8", note:"しぜんの ことばが でてくるよ",
+   pages:[
+    {scene:"☀️🍉", seg:[{w:"太陽",r:"たいよう"},"が しずんで、なつまつりの はじまり!"]},
+    {scene:"🐠🎐", seg:[{w:"金魚",r:"きんぎょ"},"すくいで 3びき すくえたよ。"]},
+    {scene:"🍎🍇", seg:["つめたい ",{w:"果物",r:"くだもの"},"を たべて ひとやすみ。"]},
+    {scene:"🎆🌙", seg:["よぞらに おおきな ",{w:"花火",r:"はなび"},"。どーん! きれいだね。"]},
+   ]},
+];
+
+/* ================= 状態 ================= */
+let deck = [], cardIdx = 0, furiOn = true;
+let quiz = null, stars = 0;
+let learned = new Set();      // カード/クイズ/えほんで触れた熟語
+let readBooks = new Set();    // 最後まで読んだ本
+let curBook = null, pageIdx = 0;
+
+/* ================= 画面遷移 ================= */
+function go(name, sub){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+name).classList.add("active");
+  if(name==="cats") renderCats();
+  if(name==="books") renderBookList();
+  if(name==="shelf") renderShelf();
+}
+
+/* ================= よみあげ ================= */
+function speak(text){
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ja-JP"; u.rate = .85; u.pitch = 1.15;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function segToKana(seg){ return seg.map(p=>typeof p==="string"?p:p.r).join(""); }
+
+/* ================= カテゴリ&カード ================= */
+function renderCats(){
+  const g = document.getElementById("catGrid");
+  g.innerHTML = "";
+  CATS.forEach(c=>{
+    const b = document.createElement("button");
+    b.className = "cat-card"; b.style.background = c.color;
+    b.innerHTML = `<span class="emoji">${c.emoji}</span>${c.name}<small>${c.note}</small>`;
+    b.onclick = ()=>{ deck = WORDS.filter(w=>w.c===c.id); cardIdx = 0; renderCard(); go("card"); };
+    g.appendChild(b);
+  });
+}
+function rubyHTML(w,r){ return `<ruby>${w}<rt>${r}</rt></ruby>`; }
+function segHTML(seg, highlight){
+  return seg.map(p=>{
+    if(typeof p==="string") return p;
+    const inner = rubyHTML(p.w,p.r);
+    return highlight ? `<span class="jword" onclick="speak('${p.r}')">${inner}</span>` : inner;
+  }).join("");
+}
+function renderCard(){
+  const k = deck[cardIdx];
+  learned.add(k.w);
+  document.getElementById("wcEmoji").textContent = k.e;
+  document.getElementById("wcWord").innerHTML = rubyHTML(k.w,k.r);
+  document.getElementById("wcSentence").innerHTML = segHTML(k.s,false);
+  document.getElementById("cardPos").textContent = (cardIdx+1)+" / "+deck.length;
+  document.getElementById("prevBtn").disabled = cardIdx===0;
+  document.getElementById("nextBtn").disabled = cardIdx===deck.length-1;
+  applyFuri();
+}
+function moveCard(d){ cardIdx = Math.max(0,Math.min(deck.length-1,cardIdx+d)); renderCard(); }
+function speakCard(){ const k = deck[cardIdx]; speak(k.r + "。" + segToKana(k.s)); }
+function toggleFuri(){ furiOn = !furiOn; applyFuri(); }
+function applyFuri(){
+  document.getElementById("wordCard").classList.toggle("hide-furi", !furiOn);
+  document.getElementById("furiBtn").textContent = furiOn ? "🙈 ふりがなを かくす" : "👀 ふりがなを みる";
+}
+
+/* ================= クイズ ================= */
+function startQuiz(){
+  const pool = [...WORDS].sort(()=>Math.random()-.5).slice(0,5);
+  quiz = {qs:pool, idx:0, locked:false};
+  renderQuiz(); go("quiz");
+}
+function renderQuiz(){
+  const q = quiz.qs[quiz.idx];
+  document.getElementById("qEmoji").textContent = q.e;
+  document.getElementById("qWord").textContent = q.w;
+  document.getElementById("qFeedback").textContent = "";
+  const dots = document.getElementById("quizDots");
+  dots.innerHTML = "";
+  quiz.qs.forEach((_,i)=>{
+    const d = document.createElement("div");
+    d.className = "dot"+(i<quiz.idx?" hit":"")+(i===quiz.idx?" now":"");
+    dots.appendChild(d);
+  });
+  const others = WORDS.filter(w=>w.w!==q.w).sort(()=>Math.random()-.5).slice(0,2);
+  const opts = [q,...others].sort(()=>Math.random()-.5);
+  const box = document.getElementById("choices");
+  box.innerHTML = ""; quiz.locked = false;
+  opts.forEach(o=>{
+    const b = document.createElement("button");
+    b.className = "choice"; b.textContent = o.r;
+    b.onclick = ()=>answer(b, o.w===q.w, q);
+    box.appendChild(b);
+  });
+}
+function answer(btn, ok, q){
+  if(quiz.locked) return;
+  if(ok){
+    quiz.locked = true;
+    btn.classList.add("correct");
+    learned.add(q.w);
+    document.getElementById("qFeedback").textContent = "⭕ せいかい!";
+    speak(q.r + "。せいかい!");
+    setTimeout(()=>{
+      quiz.idx++;
+      if(quiz.idx >= quiz.qs.length) finishQuiz();
+      else renderQuiz();
+    }, 950);
+  }else{
+    btn.classList.add("wrong"); btn.disabled = true;
+    document.getElementById("qFeedback").textContent = "もういちど!";
+    setTimeout(()=>btn.classList.remove("wrong"),450);
+  }
+}
+function finishQuiz(){
+  stars++;
+  document.getElementById("starNum").textContent = stars;
+  document.getElementById("resultMsg").textContent = "🎉 ぜんぶ よめた!";
+  document.getElementById("resultSub").textContent = "ほしを 1こ ゲット! ぜんぶで "+stars+"こ!";
+  go("result");
+  speak("すごい!ぜんぶよめたね!");
+  celebrate(24);
+}
+
+/* ================= えほん ================= */
+function renderBookList(){
+  const list = document.getElementById("bookList");
+  list.innerHTML = "";
+  BOOKS.forEach(b=>{
+    const btn = document.createElement("button");
+    btn.className = "book-item";
+    btn.style.background = b.color + "33";
+    btn.style.border = "3px solid "+b.color;
+    btn.innerHTML = `<span class="cover">${b.cover}</span><span><span class="b-title">${b.title}</span><small>${b.note}</small></span><span class="done-mark">${readBooks.has(b.id)?"💮":""}</span>`;
+    btn.onclick = ()=>{ curBook = b; pageIdx = 0; renderPage(); go("read"); };
+    list.appendChild(btn);
+  });
+}
+function renderPage(){
+  const p = curBook.pages[pageIdx];
+  p.seg.forEach(s=>{ if(typeof s!=="string") learned.add(s.w); });
+  document.getElementById("pgScene").textContent = p.scene;
+  document.getElementById("pgText").innerHTML = segHTML(p.seg,true);
+  document.getElementById("pgPos").textContent = (pageIdx+1)+" / "+curBook.pages.length;
+  document.getElementById("pgPrev").disabled = pageIdx===0;
+  const nextBtn = document.getElementById("pgNext");
+  nextBtn.textContent = pageIdx===curBook.pages.length-1 ? "💮" : "→";
+  nextBtn.disabled = false;
+}
+function movePage(d){
+  if(d>0 && pageIdx===curBook.pages.length-1){ finishBook(); return; }
+  pageIdx = Math.max(0,Math.min(curBook.pages.length-1,pageIdx+d));
+  renderPage();
+}
+function finishBook(){
+  const firstTime = !readBooks.has(curBook.id);
+  readBooks.add(curBook.id);
+  if(firstTime){ stars++; document.getElementById("starNum").textContent = stars; }
+  speak("さいごまで よめたね!すごい!");
+  celebrate(24);
+  document.getElementById("resultMsg").textContent = "💮 1さつ よめた!";
+  document.getElementById("resultSub").textContent = firstTime ? "「"+curBook.title+"」を よみきって ほしを 1こ ゲット!" : "「"+curBook.title+"」を また よめたね!";
+  go("result");
+}
+
+/* ================= ほんだな ================= */
+function renderShelf(){
+  const board = document.getElementById("shelfBoard");
+  board.innerHTML = "";
+  const readList = BOOKS.filter(b=>readBooks.has(b.id));
+  // 星も小さな本として並べる(クイズの成果)
+  const starBooks = Math.max(0, stars - readList.length);
+  const items = [
+    ...readList.map(b=>({icon:b.cover,color:b.color})),
+    ...Array.from({length:starBooks},()=>({icon:"⭐",color:"#D9A24A"}))
+  ];
+  for(let row=0; row<2; row++){
+    const r = document.createElement("div");
+    r.className = "shelf-row";
+    items.slice(row*8,row*8+8).forEach(it=>{
+      const m = document.createElement("div");
+      m.className = "mini-book"; m.style.background = it.color; m.textContent = it.icon;
+      r.appendChild(m);
+    });
+    board.appendChild(r);
+    const plank = document.createElement("div");
+    plank.className = "shelf-plank";
+    board.appendChild(plank);
+  }
+  document.getElementById("shelfNote").textContent =
+    items.length===0 ? "クイズや えほんを クリアすると ほんが ならぶよ!"
+    : "ほんだなに "+items.length+"さつ! りっぱな ほんだなに なってきたね!";
+  // よめることばリスト
+  const lw = document.getElementById("learnedWords");
+  lw.innerHTML = "";
+  WORDS.forEach(w=>{
+    const s = document.createElement("span");
+    s.className = "lw"+(learned.has(w.w)?" got":"");
+    s.textContent = learned.has(w.w) ? w.w : "?";
+    lw.appendChild(s);
+  });
+}
+
+/* ================= おいわい ================= */
+const CONF = ["⭐","📖","🎉","💮","✨","🌸"];
+function celebrate(n){
+  for(let i=0;i<n;i++){
+    const s = document.createElement("div");
+    s.className = "confetti";
+    s.textContent = CONF[Math.floor(Math.random()*CONF.length)];
+    s.style.left = Math.random()*100+"vw";
+    s.style.animationDelay = (Math.random()*.5)+"s";
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),3200);
+  }
+}
+</script>
+
+<script>
+/* ===== まなびランド ブリッジ連携 ===== */
+MB.appStart('kotoba');
+(function(){
+  const KEY='mb-kotoba-v1';
+  let wseen=new Set(), catAwarded=new Set();
+  try{
+    const s=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(s){
+      stars = s.stars||0;
+      learned = new Set(s.learned||[]);
+      readBooks = new Set(s.readBooks||[]);
+      wseen = new Set(s.wseen||[]);
+      catAwarded = new Set(s.catAwarded||[]);
+      document.getElementById("starNum").textContent = stars;
+    }
+  }catch(e){}
+  function ksave(){
+    try{ localStorage.setItem(KEY, JSON.stringify({
+      stars, learned:[...learned], readBooks:[...readBooks],
+      wseen:[...wseen], catAwarded:[...catAwarded]
+    })); }catch(e){}
+  }
+
+  /* クイズ全問クリア → 1シール (テーマ: まほうのとしょかん) */
+  const _finishQuiz = finishQuiz;
+  finishQuiz = function(){
+    _finishQuiz();
+    MB.record('kotoba.quiz');
+    MB.record('kotoba.stars');
+    MB.award('magic', {delay:800});
+    ksave();
+  };
+
+  /* えほん読了 → はじめてなら レアが出やすいシール */
+  const _finishBook = finishBook;
+  finishBook = function(){
+    const first = !readBooks.has(curBook.id);
+    _finishBook();
+    MB.record('kotoba.bookread');
+    if(first){
+      MB.record('kotoba.book');
+      MB.record('kotoba.stars');
+      MB.award('magic', {rareBoost:true, delay:800});
+    }
+    ksave();
+  };
+
+  /* カードのカテゴリ制覇 → 1シール */
+  const _renderCard = renderCard;
+  renderCard = function(){
+    _renderCard();
+    const w = deck[cardIdx];
+    wseen.add(w.w);
+    if(deck.length && deck.every(x=>wseen.has(x.w))){
+      const cid = deck[0].c;
+      if(!catAwarded.has(cid)){
+        catAwarded.add(cid);
+        MB.record('kotoba.cat');
+        MB.award('magic', {delay:400});
+      }
+    }
+    ksave();
+  };
+})();
+</script>
+</body>
+</html>

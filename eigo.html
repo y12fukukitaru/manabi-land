@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<script src="../bridge.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>えいご アドベンチャー</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#79CDEF; --sun:#FFD44D; --coral:#FF7B9C; --mint:#63D6A8; --grape:#9B8CFF;
+  --ink:#2A3B5F; --cream:#FFF8E9; --card:#FFFFFF; --line:#EADFC8;
+  --r:22px; --shadow:0 6px 0 rgba(42,59,95,.12);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","BIZ UDGothic",sans-serif;
+  background:var(--cream); color:var(--ink);
+  background-image:radial-gradient(circle at 12% 8%, rgba(121,205,239,.18) 0 120px, transparent 121px),
+    radial-gradient(circle at 88% 20%, rgba(255,212,77,.22) 0 90px, transparent 91px),
+    radial-gradient(circle at 20% 90%, rgba(255,123,156,.14) 0 110px, transparent 111px);
+  min-height:100vh; user-select:none;
+}
+.en{font-family:"Baloo 2","M PLUS Rounded 1c",sans-serif;}
+#app{max-width:520px;margin:0 auto;padding:14px 14px 90px;}
+.screen{display:none;animation:pop .25s ease;}
+.screen.active{display:block;}
+@keyframes pop{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes wiggle{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;}}
+
+/* header */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.logo{font-size:22px;font-weight:800;}
+.logo span{display:inline-block;}
+.logo .a{color:var(--coral)}.logo .b{color:var(--sun);text-shadow:0 1px 0 #d9a800}.logo .c{color:var(--sky)}.logo .d{color:var(--mint)}
+.starbox{background:#fff;border:3px solid var(--sun);border-radius:999px;padding:4px 14px;font-weight:800;font-size:16px;box-shadow:var(--shadow);}
+.back{background:#fff;border:3px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:800;font-size:15px;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);font-family:inherit;}
+.back:active{transform:translateY(3px);box-shadow:none;}
+
+/* level map */
+.hero{background:linear-gradient(135deg,#8FD8F5,#79CDEF);border-radius:28px;padding:18px 20px;color:#fff;margin-bottom:16px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.hero h1{margin:0;font-size:20px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.12);}
+.hero p{margin:6px 0 0;font-size:13px;font-weight:700;opacity:.95;}
+.hero .mascot{position:absolute;right:12px;bottom:-6px;font-size:56px;animation:bounce 2.4s infinite;}
+.lvgrid{display:grid;gap:12px;}
+.lvcard{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:var(--r);padding:14px;border:3px solid var(--line);box-shadow:var(--shadow);cursor:pointer;transition:transform .1s;}
+.lvcard:active{transform:translateY(3px);box-shadow:none;}
+.lvcard .ic{width:58px;height:58px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0;}
+.lvcard h3{margin:0;font-size:16px;font-weight:800;}
+.lvcard p{margin:3px 0 0;font-size:12px;color:#7c88a3;font-weight:700;}
+.lvcard .prog{margin-top:6px;height:8px;background:#EFE7D4;border-radius:99px;overflow:hidden;}
+.lvcard .prog i{display:block;height:100%;border-radius:99px;background:var(--mint);transition:width .4s;}
+.lvcard .arrow{margin-left:auto;font-size:20px;color:#c8cede;}
+.stickerbtn{margin-top:14px;width:100%;background:linear-gradient(135deg,#FFD97A,var(--sun));border:none;border-radius:var(--r);padding:16px;font-size:17px;font-weight:800;color:#6b4d00;cursor:pointer;box-shadow:0 6px 0 #d9a800;font-family:inherit;}
+.stickerbtn:active{transform:translateY(4px);box-shadow:none;}
+
+/* word cards */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;}
+.tab{flex-shrink:0;background:#fff;border:3px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);}
+.tab.on{background:var(--coral);border-color:var(--coral);color:#fff;box-shadow:0 4px 0 #d1547a;}
+.bigcard{background:#fff;border-radius:28px;border:3px solid var(--line);box-shadow:var(--shadow);padding:26px 20px;text-align:center;position:relative;}
+.bigcard .pic{font-size:110px;line-height:1.1;cursor:pointer;display:inline-block;}
+.bigcard .pic.play{animation:wiggle .5s;}
+.bigcard .word{font-size:40px;font-weight:800;margin:8px 0 2px;letter-spacing:.02em;}
+.bigcard .yomi{font-size:15px;color:#7c88a3;font-weight:700;}
+.soundbtn{margin-top:14px;background:var(--sky);color:#fff;border:none;border-radius:999px;padding:12px 30px;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 5px 0 #4ea6cc;font-family:inherit;}
+.soundbtn:active{transform:translateY(3px);box-shadow:none;}
+.navrow{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;}
+.navbtn{flex:1;background:#fff;border:3px solid var(--line);border-radius:18px;padding:12px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:var(--shadow);font-family:inherit;color:var(--ink);}
+.navbtn:active{transform:translateY(3px);box-shadow:none;}
+.counter{font-weight:800;color:#7c88a3;font-size:14px;white-space:nowrap;}
+
+/* abc grid */
+.abcgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.abccell{background:#fff;border:3px solid var(--line);border-radius:18px;padding:10px 4px;text-align:center;cursor:pointer;box-shadow:var(--shadow);}
+.abccell:active{transform:translateY(3px);box-shadow:none;}
+.abccell .L{font-size:30px;font-weight:800;}
+.abccell .s{font-size:11px;color:#7c88a3;font-weight:700;}
+.abccell.done{border-color:var(--mint);background:#EFFBF5;}
+
+/* quiz */
+.qprompt{background:#fff;border-radius:24px;border:3px solid var(--line);box-shadow:var(--shadow);padding:20px;text-align:center;margin-bottom:14px;}
+.qprompt .big{font-size:26px;font-weight:800;}
+.qprompt .sub{font-size:13px;color:#7c88a3;font-weight:700;margin-top:4px;}
+.earbtn{font-size:52px;background:none;border:none;cursor:pointer;animation:bounce 2s infinite;}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.choices.two{grid-template-columns:repeat(2,1fr);}
+.choice{background:#fff;border:3px solid var(--line);border-radius:20px;padding:16px 6px;text-align:center;font-size:46px;cursor:pointer;box-shadow:var(--shadow);transition:transform .1s;}
+.choice:active{transform:translateY(3px);box-shadow:none;}
+.choice.txt{font-size:15px;font-weight:800;padding:16px 8px;min-height:64px;display:flex;align-items:center;justify-content:center;}
+.choice.right{border-color:var(--mint);background:#EFFBF5;animation:bounce .5s;}
+.choice.wrong{border-color:var(--coral);background:#FFF0F4;animation:wiggle .4s;}
+.qbar{display:flex;gap:5px;margin-bottom:12px;}
+.qbar i{flex:1;height:10px;border-radius:99px;background:#EFE7D4;}
+.qbar i.ok{background:var(--mint);}
+.qbar i.ng{background:var(--coral);}
+.qbar i.now{background:var(--sun);}
+
+/* trace */
+.tracewrap{background:#fff;border-radius:24px;border:3px solid var(--line);box-shadow:var(--shadow);padding:14px;text-align:center;}
+#traceCanvas{touch-action:none;border-radius:16px;background:#FDFBF4;border:2px dashed #E3D8BE;max-width:100%;}
+.tracerow{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+.mini{background:#fff;border:3px solid var(--line);border-radius:14px;padding:8px 14px;font-weight:800;cursor:pointer;box-shadow:var(--shadow);font-family:inherit;font-size:14px;color:var(--ink);}
+.mini:active{transform:translateY(3px);box-shadow:none;}
+.mini.go{background:var(--mint);border-color:var(--mint);color:#fff;box-shadow:0 5px 0 #3fae83;}
+
+/* spelling */
+.slotrow,.tilerow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px;}
+.slot{width:46px;height:52px;border-radius:12px;border:3px dashed #d8cdb3;background:#FDFBF4;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;}
+.slot.fill{border-style:solid;border-color:var(--sky);background:#EFF9FE;cursor:pointer;}
+.tile{width:46px;height:52px;border-radius:12px;border:3px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;cursor:pointer;box-shadow:0 4px 0 rgba(42,59,95,.12);}
+.tile:active{transform:translateY(3px);box-shadow:none;}
+.tile.used{opacity:.25;pointer-events:none;}
+
+/* sticker book */
+.album{background:linear-gradient(#FFFDF6,#FFF6E0);border:3px solid var(--line);border-radius:24px;min-height:380px;position:relative;box-shadow:var(--shadow);overflow:hidden;
+  background-image:repeating-linear-gradient(transparent 0 34px, rgba(214,196,150,.25) 34px 35px);}
+.album .hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#b9ab8a;font-weight:800;font-size:14px;text-align:center;padding:20px;pointer-events:none;}
+.placed{position:absolute;font-size:44px;filter:drop-shadow(0 3px 2px rgba(0,0,0,.15));cursor:pointer;}
+.tray{margin-top:14px;background:#fff;border:3px solid var(--line);border-radius:20px;padding:12px;box-shadow:var(--shadow);}
+.tray h4{margin:0 0 8px;font-size:14px;font-weight:800;color:#7c88a3;}
+.trayrow{display:flex;gap:10px;flex-wrap:wrap;min-height:52px;}
+.traysticker{font-size:38px;cursor:pointer;transition:transform .1s;}
+.traysticker:active{transform:scale(1.2);}
+.traysticker.sel{transform:scale(1.25);filter:drop-shadow(0 0 6px var(--sun));}
+
+/* toast + reward */
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:999px;font-weight:800;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:60;white-space:nowrap;}
+#toast.show{opacity:1;}
+#reward{position:fixed;inset:0;background:rgba(42,59,95,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
+#reward.show{display:flex;}
+.rewardcard{background:#fff;border-radius:28px;padding:28px 24px;text-align:center;max-width:320px;width:100%;animation:pop .3s;}
+.rewardcard .st{font-size:84px;animation:bounce 1s infinite;display:inline-block;}
+.rewardcard h2{margin:6px 0 4px;font-size:20px;font-weight:800;color:var(--coral);}
+.rewardcard p{margin:0 0 16px;font-size:13px;color:#7c88a3;font-weight:700;}
+.rewardcard button{background:var(--mint);color:#fff;border:none;border-radius:999px;padding:12px 34px;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 5px 0 #3fae83;font-family:inherit;}
+.confetti{position:fixed;top:-20px;font-size:22px;z-index:55;animation:fall linear forwards;pointer-events:none;}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.8;}}
+
+.seclabel{font-size:13px;font-weight:800;color:#7c88a3;margin:16px 0 8px;}
+.pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.pill{background:#fff;border:3px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--ink);}
+.pill.on{background:var(--grape);border-color:var(--grape);color:#fff;box-shadow:0 4px 0 #7a6cd6;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="logo en"><span class="a">E</span><span class="b">i</span><span class="c">g</span><span class="d">o</span> <span style="font-size:15px">アドベンチャー</span></div>
+    <div class="starbox">⭐ <span id="starCount">0</span></div>
+  </div>
+
+  <!-- ============ HOME ============ -->
+  <div class="screen active" id="scr-home">
+    <div class="hero">
+      <h1>きょうも えいごで あそぼう！</h1>
+      <p>クリアするたびに シールが もらえるよ 🎁</p>
+      <div class="mascot">🦊</div>
+    </div>
+    <div class="lvgrid">
+      <div class="lvcard" onclick="go('words')">
+        <div class="ic" style="background:#FFE9EF">🖼️</div>
+        <div style="flex:1"><h3>ステップ1・えほんたんご</h3><p>えと おとで たんごを おぼえよう（4さい〜）</p>
+        <div class="prog"><i id="p-words"></i></div></div>
+        <div class="arrow">▶</div>
+      </div>
+      <div class="lvcard" onclick="go('abc')">
+        <div class="ic" style="background:#FFF4D6">🔤</div>
+        <div style="flex:1"><h3>ステップ2・ABC タッチ</h3><p>アルファベットの なまえと おとを きこう</p>
+        <div class="prog"><i id="p-abc"></i></div></div>
+        <div class="arrow">▶</div>
+      </div>
+      <div class="lvcard" onclick="go('listen')">
+        <div class="ic" style="background:#E4F6FF">👂</div>
+        <div style="flex:1"><h3>ステップ3・きいて えらぶ</h3><p>えいごを きいて ただしい えを タッチ！</p>
+        <div class="prog"><i id="p-listen"></i></div></div>
+        <div class="arrow">▶</div>
+      </div>
+      <div class="lvcard" onclick="go('trace')">
+        <div class="ic" style="background:#EAF9F1">✏️</div>
+        <div style="flex:1"><h3>ステップ4・なぞりがき</h3><p>ゆびで ABCを かいて おぼえよう</p>
+        <div class="prog"><i id="p-trace"></i></div></div>
+        <div class="arrow">▶</div>
+      </div>
+      <div class="lvcard" onclick="go('spell')">
+        <div class="ic" style="background:#F0EDFF">🧩</div>
+        <div style="flex:1"><h3>ステップ5・スペルパズル</h3><p>もじを ならべて たんごを つくろう</p>
+        <div class="prog"><i id="p-spell"></i></div></div>
+        <div class="arrow">▶</div>
+      </div>
+      <div class="lvcard" onclick="go('adv')">
+        <div class="ic" style="background:#E8F1FF">🎓</div>
+        <div style="flex:1"><h3>ステップ6・チャレンジ検定</h3><p>英検5級〜TOEIC・TOEFL語彙に挑戦</p>
+        <div class="prog"><i id="p-adv"></i></div></div>
+        <div class="arrow">▶</div>
+      </div>
+    </div>
+    <button class="stickerbtn" onclick="go('album')">📒 シールちょうを ひらく（<span id="trayCount">0</span>まい はれるよ）</button>
+  </div>
+
+  <!-- ============ WORDS ============ -->
+  <div class="screen" id="scr-words">
+    <button class="back" onclick="go('home')">← もどる</button>
+    <div class="seclabel">タッチすると えいごが きこえるよ 🔊</div>
+    <div class="tabs" id="wordTabs"></div>
+    <div class="bigcard">
+      <div class="pic" id="wPic" onclick="speakCurrentWord()">🐶</div>
+      <div class="word en" id="wEn">dog</div>
+      <div class="yomi" id="wJa">いぬ</div>
+      <button class="soundbtn" onclick="speakCurrentWord()">🔊 きく</button>
+    </div>
+    <div class="navrow">
+      <button class="navbtn" onclick="wordNav(-1)">◀ まえ</button>
+      <div class="counter" id="wCount">1 / 10</div>
+      <button class="navbtn" onclick="wordNav(1)">つぎ ▶</button>
+    </div>
+  </div>
+
+  <!-- ============ ABC ============ -->
+  <div class="screen" id="scr-abc">
+    <button class="back" onclick="go('home')">← もどる</button>
+    <div class="seclabel">ぜんぶ タッチできたら シールが もらえるよ！</div>
+    <div class="abcgrid" id="abcGrid"></div>
+  </div>
+
+  <!-- ============ LISTEN QUIZ ============ -->
+  <div class="screen" id="scr-listen">
+    <button class="back" onclick="go('home')">← もどる</button>
+    <div class="qbar" id="lBar"></div>
+    <div class="qprompt">
+      <button class="earbtn" onclick="playListenWord()">👂🔊</button>
+      <div class="sub">きこえた えいごの えを タッチしてね</div>
+    </div>
+    <div class="choices" id="lChoices"></div>
+  </div>
+
+  <!-- ============ TRACE ============ -->
+  <div class="screen" id="scr-trace">
+    <button class="back" onclick="go('home')">← もどる</button>
+    <div class="tracewrap">
+      <div style="font-weight:800;margin-bottom:8px;">「<span id="traceLetter" class="en">A</span>」を ゆびで なぞってね ✏️</div>
+      <canvas id="traceCanvas" width="320" height="300"></canvas>
+      <div class="tracerow">
+        <button class="mini" onclick="traceSpeak()">🔊 きく</button>
+        <button class="mini" onclick="traceClear()">🧽 けす</button>
+        <button class="mini" onclick="traceCase()">Aa きりかえ</button>
+        <button class="mini go" onclick="traceDone()">できた！ →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SPELL ============ -->
+  <div class="screen" id="scr-spell">
+    <button class="back" onclick="go('home')">← もどる</button>
+    <div class="qbar" id="sBar"></div>
+    <div class="qprompt">
+      <div style="font-size:64px" id="spPic">🐱</div>
+      <div class="sub" id="spJa">ねこ</div>
+      <button class="mini" style="margin-top:6px" onclick="spellSpeak()">🔊 ヒントを きく</button>
+      <div class="slotrow" id="spSlots"></div>
+      <div class="tilerow" id="spTiles"></div>
+    </div>
+  </div>
+
+  <!-- ============ ADVANCED ============ -->
+  <div class="screen" id="scr-adv">
+    <button class="back" onclick="go('home')">← もどる</button>
+    <div class="seclabel">レベルを えらんでね（10問中8問正解でシールGET）</div>
+    <div class="pillrow" id="advPills"></div>
+    <div class="qbar" id="aBar"></div>
+    <div class="qprompt">
+      <div class="big en" id="aWord">library</div>
+      <button class="mini" style="margin-top:6px" onclick="advSpeak()">🔊 発音を きく</button>
+      <div class="sub">いみは どれ？</div>
+    </div>
+    <div class="choices two" id="aChoices"></div>
+  </div>
+
+  <!-- ============ ALBUM ============ -->
+  <div class="screen" id="scr-album">
+    <button class="back" onclick="go('home')">← もどる</button>
+    <div class="seclabel">📒 わたしの シールちょう — したの シールを えらんで、すきな ばしょに ペタッ！</div>
+    <div class="album" id="album"><div class="hint" id="albumHint">クイズを クリアして<br>シールを あつめよう！</div></div>
+    <div class="tray">
+      <h4>もっている シール（タッチして えらぶ）</h4>
+      <div class="trayrow" id="trayRow"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="reward"><div class="rewardcard">
+  <div class="st" id="rewardSticker">🌟</div>
+  <h2>シール GET！</h2>
+  <p>シールちょうに はれるよ</p>
+  <button onclick="closeReward()">やったー！</button>
+</div></div>
+
+<script>
+/* ================= DATA ================= */
+const CATS=[
+ {name:"どうぶつ",words:[["dog","いぬ","🐶"],["cat","ねこ","🐱"],["rabbit","うさぎ","🐰"],["lion","ライオン","🦁"],["elephant","ぞう","🐘"],["bear","くま","🐻"],["monkey","さる","🐵"],["fish","さかな","🐟"],["bird","とり","🐦"],["panda","パンダ","🐼"]]},
+ {name:"たべもの",words:[["apple","りんご","🍎"],["banana","バナナ","🍌"],["grapes","ぶどう","🍇"],["strawberry","いちご","🍓"],["orange","みかん","🍊"],["peach","もも","🍑"],["melon","メロン","🍈"],["rice","ごはん","🍚"],["egg","たまご","🥚"],["milk","ぎゅうにゅう","🥛"]]},
+ {name:"いろ",words:[["red","あか","🔴"],["blue","あお","🔵"],["yellow","きいろ","🟡"],["green","みどり","🟢"],["orange","オレンジ","🟠"],["purple","むらさき","🟣"],["pink","ピンク","🌸"],["black","くろ","⚫"],["white","しろ","⚪"],["brown","ちゃいろ","🟤"]]},
+ {name:"かず",words:[["one","いち","1️⃣"],["two","に","2️⃣"],["three","さん","3️⃣"],["four","よん","4️⃣"],["five","ご","5️⃣"],["six","ろく","6️⃣"],["seven","なな","7️⃣"],["eight","はち","8️⃣"],["nine","きゅう","9️⃣"],["ten","じゅう","🔟"]]},
+ {name:"のりもの",words:[["car","くるま","🚗"],["bus","バス","🚌"],["train","でんしゃ","🚃"],["plane","ひこうき","✈️"],["ship","ふね","🚢"],["bike","じてんしゃ","🚲"]]},
+ {name:"からだ",words:[["hand","て","✋"],["eye","め","👁️"],["ear","みみ","👂"],["nose","はな","👃"],["mouth","くち","👄"],["foot","あし","🦶"]]}
+];
+const ABC_WORDS={A:["Apple","🍎"],B:["Bear","🐻"],C:["Cat","🐱"],D:["Dog","🐶"],E:["Egg","🥚"],F:["Fish","🐟"],G:["Grapes","🍇"],H:["Hat","🎩"],I:["Ice cream","🍦"],J:["Juice","🧃"],K:["King","🤴"],L:["Lion","🦁"],M:["Monkey","🐵"],N:["Nose","👃"],O:["Orange","🍊"],P:["Panda","🐼"],Q:["Queen","👸"],R:["Rabbit","🐰"],S:["Star","⭐"],T:["Train","🚃"],U:["Umbrella","☂️"],V:["Violin","🎻"],W:["Watch","⌚"],X:["Xylophone","🎵"],Y:["Yacht","⛵"],Z:["Zebra","🦓"]};
+const SPELL_WORDS=[["cat","ねこ","🐱"],["dog","いぬ","🐶"],["sun","たいよう","☀️"],["egg","たまご","🥚"],["red","あか","🔴"],["bus","バス","🚌"],["fish","さかな","🐟"],["milk","ぎゅうにゅう","🥛"],["star","ほし","⭐"],["bird","とり","🐦"],["apple","りんご","🍎"],["train","でんしゃ","🚃"]];
+const ADV_SETS={
+ "英検5級":[["teacher","先生"],["student","生徒"],["library","図書館"],["breakfast","朝ごはん"],["weather","天気"],["subject","教科"],["homework","宿題"],["kitchen","台所"],["window","窓"],["Wednesday","水曜日"],["month","月（つき・1か月）"],["family","家族"]],
+ "英検4級":[["arrive","到着する"],["borrow","借りる"],["expensive","（値段が）高い"],["famous","有名な"],["hospital","病院"],["invite","招待する"],["language","言語"],["museum","博物館"],["practice","練習する"],["vacation","休暇"],["weekend","週末"],["different","ちがう・異なる"]],
+ "英検3級":[["environment","環境"],["experience","経験"],["foreign","外国の"],["improve","改善する"],["information","情報"],["necessary","必要な"],["prepare","準備する"],["receive","受け取る"],["volunteer","ボランティア"],["culture","文化"],["decide","決める"],["exchange","交換する"]],
+ "英検準2級":[["achieve","達成する"],["confident","自信のある"],["convenient","便利な"],["encourage","励ます"],["graduate","卒業する"],["opportunity","機会"],["participate","参加する"],["recommend","すすめる"],["reduce","減らす"],["technology","技術"],["environment-friendly","環境にやさしい"],["comfortable","快適な"]],
+ "TOEIC":[["invoice","請求書"],["appointment","予約・約束"],["colleague","同僚"],["deadline","締め切り"],["negotiate","交渉する"],["quarterly","四半期の"],["refund","返金"],["schedule","予定（表）"],["shipment","出荷・発送"],["applicant","応募者"],["merger","合併"],["revenue","収益"]],
+ "TOEFL":[["hypothesis","仮説"],["phenomenon","現象"],["significant","重要な・有意な"],["analyze","分析する"],["evidence","証拠"],["species","（生物の）種"],["theory","理論"],["dense","密集した・濃い"],["emerge","現れる"],["fluctuate","変動する"],["inherit","受け継ぐ"],["synthesize","合成する・統合する"]]
+};
+const STICKER_POOL=["🌟","🦄","🌈","🍩","🐥","🚀","🍓","🐬","🎀","🦖","🍭","⚽","🌻","🐢","🎈","🧁","🐝","🍉","👑","🛸","🐧","🌸","🤖","🦋","🍦","🐨","🎠","🪁","🐳","🍀"];
+
+/* ================= STATE + STORAGE ================= */
+let S={stars:0,wordsSeen:{},abcDone:[],listenWins:0,traceDone:[],spellWins:0,advWins:{},tray:[],placed:[]};
+let memoryOnly=false;
+async function loadState(){
+  try{const r=await window.storage.get("eigo-adventure-v1");if(r&&r.value){S=Object.assign(S,JSON.parse(r.value));}}
+  catch(e){/* first run or no storage */}
+  refreshHome();renderTray();renderAlbum();
+}
+async function saveState(){
+  try{if(window.storage)await window.storage.set("eigo-adventure-v1",JSON.stringify(S));}
+  catch(e){memoryOnly=true;}
+}
+
+/* ================= SPEECH ================= */
+let enVoice=null;
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();
+  enVoice=vs.find(v=>v.lang==="en-US")||vs.find(v=>v.lang&&v.lang.startsWith("en"))||null;
+}
+if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speak(text,rate=0.85){
+  if(!("speechSynthesis" in window)){toast("この端末では 音声が使えません");return;}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="en-US";if(enVoice)u.voice=enVoice;u.rate=rate;u.pitch=1.05;
+  speechSynthesis.speak(u);
+}
+
+/* ================= NAV ================= */
+function go(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("scr-"+id).classList.add("active");
+  if(id==="home")refreshHome();
+  if(id==="words")renderWord();
+  if(id==="abc")renderABC();
+  if(id==="listen")startListen();
+  if(id==="trace")traceInit();
+  if(id==="spell")startSpell();
+  if(id==="adv")startAdv();
+  if(id==="album"){renderTray();renderAlbum();}
+  window.scrollTo(0,0);
+}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);}
+
+/* ================= REWARDS ================= */
+function addStars(n){S.stars+=n;document.getElementById("starCount").textContent=S.stars;saveState();}
+function giveSticker(){
+  const unowned=STICKER_POOL.filter(s=>!S.tray.includes(s)&&!S.placed.some(p=>p.e===s));
+  const pool=unowned.length?unowned:STICKER_POOL;
+  const st=pool[Math.floor(Math.random()*pool.length)];
+  S.tray.push(st);saveState();
+  document.getElementById("rewardSticker").textContent=st;
+  document.getElementById("reward").classList.add("show");
+  confetti();
+}
+function closeReward(){document.getElementById("reward").classList.remove("show");refreshHome();}
+function confetti(){
+  const em=["🎉","✨","⭐","🎊","💛","💙"];
+  for(let i=0;i<18;i++){
+    const c=document.createElement("div");c.className="confetti";c.textContent=em[i%em.length];
+    c.style.left=Math.random()*100+"vw";c.style.animationDuration=(1.4+Math.random()*1.4)+"s";
+    document.body.appendChild(c);setTimeout(()=>c.remove(),3000);
+  }
+}
+
+/* ================= HOME PROGRESS ================= */
+function refreshHome(){
+  document.getElementById("starCount").textContent=S.stars;
+  document.getElementById("trayCount").textContent=S.tray.length;
+  const totalWords=CATS.reduce((a,c)=>a+c.words.length,0);
+  setProg("p-words",Object.keys(S.wordsSeen).length/totalWords);
+  setProg("p-abc",S.abcDone.length/26);
+  setProg("p-listen",Math.min(S.listenWins/5,1));
+  setProg("p-trace",S.traceDone.length/26);
+  setProg("p-spell",Math.min(S.spellWins/3,1));
+  const advLv=Object.keys(ADV_SETS).length;
+  setProg("p-adv",Object.keys(S.advWins).length/advLv);
+}
+function setProg(id,r){document.getElementById(id).style.width=Math.round(Math.min(r,1)*100)+"%";}
+
+/* ================= 1. WORDS ================= */
+let catIdx=0,wordIdx=0;
+const tabsEl=document.getElementById("wordTabs");
+CATS.forEach((c,i)=>{
+  const b=document.createElement("button");b.className="tab"+(i===0?" on":"");b.textContent=c.name;
+  b.onclick=()=>{catIdx=i;wordIdx=0;document.querySelectorAll("#wordTabs .tab").forEach((t,j)=>t.classList.toggle("on",j===i));renderWord();};
+  tabsEl.appendChild(b);
+});
+function renderWord(){
+  const w=CATS[catIdx].words[wordIdx];
+  document.getElementById("wPic").textContent=w[2];
+  document.getElementById("wEn").textContent=w[0];
+  document.getElementById("wJa").textContent=w[1];
+  document.getElementById("wCount").textContent=(wordIdx+1)+" / "+CATS[catIdx].words.length;
+  const before=Object.keys(S.wordsSeen).length;
+  S.wordsSeen[w[0]]=1;
+  const total=CATS.reduce((a,c)=>a+c.words.length,0);
+  if(before<total&&Object.keys(S.wordsSeen).length===total){addStars(3);giveSticker();toast("ぜんぶの たんごを みたね！");}
+  saveState();
+}
+function wordNav(d){
+  const n=CATS[catIdx].words.length;
+  wordIdx=(wordIdx+d+n)%n;renderWord();speakCurrentWord();
+}
+function speakCurrentWord(){
+  const pic=document.getElementById("wPic");pic.classList.remove("play");void pic.offsetWidth;pic.classList.add("play");
+  speak(CATS[catIdx].words[wordIdx][0]);
+}
+
+/* ================= 2. ABC ================= */
+function renderABC(){
+  const g=document.getElementById("abcGrid");g.innerHTML="";
+  for(let i=0;i<26;i++){
+    const L=String.fromCharCode(65+i);
+    const cell=document.createElement("div");
+    cell.className="abccell"+(S.abcDone.includes(L)?" done":"");
+    cell.innerHTML=`<div class="L en">${L}${L.toLowerCase()}</div><div class="s en">${ABC_WORDS[L][1]} ${ABC_WORDS[L][0]}</div>`;
+    cell.onclick=()=>{
+      speak(L+". "+L+" is for "+ABC_WORDS[L][0]+".",0.85);
+      if(!S.abcDone.includes(L)){
+        S.abcDone.push(L);cell.classList.add("done");saveState();
+        if(S.abcDone.length===26){addStars(3);giveSticker();toast("ABC ぜんぶ タッチしたね！");}
+      }
+    };
+    g.appendChild(cell);
+  }
+}
+
+/* ================= 3. LISTEN QUIZ ================= */
+let lQ=[],lIdx=0,lScore=0,lAnswered=false;
+function allL1(){return CATS.flatMap(c=>c.words);}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function startListen(){
+  const pool=shuffle(allL1());
+  lQ=pool.slice(0,5).map(ans=>{
+    const others=shuffle(pool.filter(w=>w[0]!==ans[0])).slice(0,2);
+    return{ans,opts:shuffle([ans,...others])};
+  });
+  lIdx=0;lScore=0;renderListen();
+}
+function renderListen(){
+  const bar=document.getElementById("lBar");bar.innerHTML="";
+  for(let i=0;i<5;i++){const s=document.createElement("i");if(i<lIdx)s.className=lQ[i].ok?"ok":"ng";else if(i===lIdx)s.className="now";bar.appendChild(s);}
+  lAnswered=false;
+  const ch=document.getElementById("lChoices");ch.innerHTML="";
+  lQ[lIdx].opts.forEach(w=>{
+    const d=document.createElement("div");d.className="choice";d.textContent=w[2];
+    d.onclick=()=>answerListen(d,w);
+    ch.appendChild(d);
+  });
+  setTimeout(playListenWord,400);
+}
+function playListenWord(){speak(lQ[lIdx].ans[0]);}
+function answerListen(el,w){
+  if(lAnswered)return;lAnswered=true;
+  const ok=w[0]===lQ[lIdx].ans[0];lQ[lIdx].ok=ok;
+  el.classList.add(ok?"right":"wrong");
+  if(ok){toast("せいかい！ "+lQ[lIdx].ans[0]+" = "+lQ[lIdx].ans[1]);lScore++;addStars(1);}
+  else toast("ざんねん… "+lQ[lIdx].ans[0]+" は "+lQ[lIdx].ans[2]+" だよ");
+  setTimeout(()=>{
+    lIdx++;
+    if(lIdx<5)renderListen();
+    else{
+      if(lScore>=4){S.listenWins++;saveState();giveSticker();}
+      else toast(lScore+"もん せいかい！ もういちど チャレンジ！");
+      startListen();
+    }
+  },1300);
+}
+
+/* ================= 4. TRACE ================= */
+let traceIdx=0,upper=true,drawing=false,drewSomething=false;
+const cv=document.getElementById("traceCanvas");const ctx=cv.getContext("2d");
+function traceLetterChar(){const L=String.fromCharCode(65+traceIdx);return upper?L:L.toLowerCase();}
+function traceInit(){
+  const wrap=cv.parentElement;
+  const w=Math.min(360,wrap.clientWidth-28);
+  cv.width=w;cv.height=Math.round(w*0.9);
+  traceDraw();
+}
+function traceDraw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.save();
+  ctx.fillStyle="rgba(121,205,239,.28)";
+  ctx.font="800 "+Math.round(cv.height*0.75)+"px 'Baloo 2','M PLUS Rounded 1c',sans-serif";
+  ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(traceLetterChar(),cv.width/2,cv.height/2+cv.height*0.04);
+  ctx.restore();
+  document.getElementById("traceLetter").textContent=traceLetterChar();
+  drewSomething=false;
+}
+function pos(e){
+  const r=cv.getBoundingClientRect();
+  const p=e.touches?e.touches[0]:e;
+  return{x:(p.clientX-r.left)*(cv.width/r.width),y:(p.clientY-r.top)*(cv.height/r.height)};
+}
+function tStart(e){e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function tMove(e){
+  if(!drawing)return;e.preventDefault();
+  const p=pos(e);
+  ctx.lineTo(p.x,p.y);ctx.strokeStyle="#FF7B9C";ctx.lineWidth=Math.max(10,cv.width*0.04);ctx.lineCap="round";ctx.lineJoin="round";ctx.stroke();
+  drewSomething=true;
+}
+function tEnd(){drawing=false;}
+cv.addEventListener("mousedown",tStart);cv.addEventListener("mousemove",tMove);window.addEventListener("mouseup",tEnd);
+cv.addEventListener("touchstart",tStart,{passive:false});cv.addEventListener("touchmove",tMove,{passive:false});cv.addEventListener("touchend",tEnd);
+function traceClear(){traceDraw();}
+function traceCase(){upper=!upper;traceDraw();}
+function traceSpeak(){const L=String.fromCharCode(65+traceIdx);speak(L+". "+L+" is for "+ABC_WORDS[L][0]+".");}
+function traceDone(){
+  if(!drewSomething){toast("まず ゆびで なぞってみよう！");return;}
+  const L=String.fromCharCode(65+traceIdx);
+  if(!S.traceDone.includes(L)){
+    S.traceDone.push(L);addStars(1);saveState();
+    if(S.traceDone.length===26){giveSticker();toast("A〜Z ぜんぶ かけたね！すごい！");}
+    else toast(L+" が かけたね！ ⭐+1");
+  } else toast("つぎの もじに チャレンジ！");
+  traceIdx=(traceIdx+1)%26;traceDraw();traceSpeak();
+  refreshHome();
+}
+
+/* ================= 5. SPELL ================= */
+let sQ=[],sIdx=0,sScore=0,curWord=null,filled=[];
+function startSpell(){sQ=shuffle(SPELL_WORDS).slice(0,5);sIdx=0;sScore=0;renderSpell();}
+function renderSpell(){
+  const bar=document.getElementById("sBar");bar.innerHTML="";
+  for(let i=0;i<5;i++){const s=document.createElement("i");if(i<sIdx)s.className=sQ[i].ok?"ok":"ng";else if(i===sIdx)s.className="now";bar.appendChild(s);}
+  curWord=sQ[sIdx];filled=[];
+  document.getElementById("spPic").textContent=curWord[2];
+  document.getElementById("spJa").textContent=curWord[1];
+  const slots=document.getElementById("spSlots");slots.innerHTML="";
+  curWord[0].split("").forEach(()=>{const d=document.createElement("div");d.className="slot en";slots.appendChild(d);});
+  const tiles=document.getElementById("spTiles");tiles.innerHTML="";
+  shuffle(curWord[0].split("")).forEach((ch,i)=>{
+    const t=document.createElement("div");t.className="tile en";t.textContent=ch;
+    t.onclick=()=>{
+      if(t.classList.contains("used"))return;
+      t.classList.add("used");filled.push({ch,tile:t});
+      updateSlots();
+      if(filled.length===curWord[0].length)checkSpell();
+    };
+    tiles.appendChild(t);
+  });
+}
+function updateSlots(){
+  const slots=document.querySelectorAll("#spSlots .slot");
+  slots.forEach((s,i)=>{
+    if(filled[i]){s.textContent=filled[i].ch;s.classList.add("fill");
+      s.onclick=()=>{filled[i].tile.classList.remove("used");filled.splice(i,1);updateSlots();};}
+    else{s.textContent="";s.classList.remove("fill");s.onclick=null;}
+  });
+}
+function checkSpell(){
+  const guess=filled.map(f=>f.ch).join("");
+  const ok=guess===curWord[0];sQ[sIdx].ok=ok;
+  if(ok){speak(curWord[0]);toast("せいかい！ "+curWord[0]+" 🎉");sScore++;addStars(1);}
+  else toast("おしい！ こたえは "+curWord[0]+" だよ");
+  setTimeout(()=>{
+    sIdx++;
+    if(sIdx<5)renderSpell();
+    else{
+      if(sScore>=4){S.spellWins++;saveState();giveSticker();}
+      else toast(sScore+"もん せいかい！ もういちど！");
+      startSpell();
+    }
+  },1400);
+}
+function spellSpeak(){speak(curWord[0]);}
+
+/* ================= 6. ADVANCED ================= */
+let advLevel=Object.keys(ADV_SETS)[0],aQ=[],aIdx=0,aScore=0,aAnswered=false;
+const pills=document.getElementById("advPills");
+Object.keys(ADV_SETS).forEach((lv,i)=>{
+  const b=document.createElement("button");b.className="pill"+(i===0?" on":"");b.textContent=lv;
+  b.onclick=()=>{advLevel=lv;document.querySelectorAll("#advPills .pill").forEach(p=>p.classList.toggle("on",p.textContent===lv));startAdv();};
+  pills.appendChild(b);
+});
+function startAdv(){
+  const set=ADV_SETS[advLevel];
+  aQ=shuffle(set).slice(0,10).map(ans=>{
+    const others=shuffle(set.filter(w=>w[0]!==ans[0])).slice(0,3);
+    return{ans,opts:shuffle([ans,...others])};
+  });
+  aIdx=0;aScore=0;renderAdv();
+}
+function renderAdv(){
+  const bar=document.getElementById("aBar");bar.innerHTML="";
+  for(let i=0;i<aQ.length;i++){const s=document.createElement("i");if(i<aIdx)s.className=aQ[i].ok?"ok":"ng";else if(i===aIdx)s.className="now";bar.appendChild(s);}
+  aAnswered=false;
+  document.getElementById("aWord").textContent=aQ[aIdx].ans[0];
+  const ch=document.getElementById("aChoices");ch.innerHTML="";
+  aQ[aIdx].opts.forEach(w=>{
+    const d=document.createElement("div");d.className="choice txt";d.textContent=w[1];
+    d.onclick=()=>{
+      if(aAnswered)return;aAnswered=true;
+      const ok=w[0]===aQ[aIdx].ans[0];aQ[aIdx].ok=ok;
+      d.classList.add(ok?"right":"wrong");
+      if(ok){aScore++;addStars(1);}else toast(aQ[aIdx].ans[0]+" = "+aQ[aIdx].ans[1]);
+      setTimeout(()=>{
+        aIdx++;
+        if(aIdx<aQ.length)renderAdv();
+        else{
+          if(aScore>=8){S.advWins[advLevel]=(S.advWins[advLevel]||0)+1;saveState();giveSticker();toast(advLevel+" クリア！ "+aScore+"/10");}
+          else toast(aScore+"/10 …8問正解で シールGET！");
+          startAdv();
+        }
+      },1000);
+    };
+    ch.appendChild(d);
+  });
+  setTimeout(advSpeak,300);
+}
+function advSpeak(){speak(aQ[aIdx].ans[0],0.9);}
+
+/* ================= ALBUM ================= */
+let selectedSticker=null;
+function renderTray(){
+  const row=document.getElementById("trayRow");row.innerHTML="";
+  document.getElementById("trayCount").textContent=S.tray.length;
+  if(!S.tray.length){row.innerHTML='<span style="font-size:13px;color:#b9ab8a;font-weight:700">まだ シールが ないよ。クイズを クリアしよう！</span>';return;}
+  S.tray.forEach((st,i)=>{
+    const d=document.createElement("div");d.className="traysticker";d.textContent=st;
+    d.onclick=()=>{
+      document.querySelectorAll(".traysticker").forEach(t=>t.classList.remove("sel"));
+      if(selectedSticker===i){selectedSticker=null;}
+      else{selectedSticker=i;d.classList.add("sel");toast("シールちょうの すきな ばしょを タッチ！");}
+    };
+    row.appendChild(d);
+  });
+}
+function renderAlbum(){
+  const al=document.getElementById("album");
+  al.querySelectorAll(".placed").forEach(e=>e.remove());
+  document.getElementById("albumHint").style.display=(S.placed.length||S.tray.length)?"none":"flex";
+  S.placed.forEach((p,i)=>{
+    const d=document.createElement("div");d.className="placed";d.textContent=p.e;
+    d.style.left=p.x+"%";d.style.top=p.y+"%";d.style.transform="rotate("+p.r+"deg)";
+    d.title="ながおしで はがす";
+    let timer=null;
+    const startHold=()=>{timer=setTimeout(()=>{S.placed.splice(i,1);S.tray.push(p.e);saveState();renderAlbum();renderTray();toast("シールを はがしたよ");},700);};
+    const cancelHold=()=>clearTimeout(timer);
+    d.addEventListener("mousedown",startHold);d.addEventListener("mouseup",cancelHold);d.addEventListener("mouseleave",cancelHold);
+    d.addEventListener("touchstart",startHold,{passive:true});d.addEventListener("touchend",cancelHold);
+    al.appendChild(d);
+  });
+}
+document.getElementById("album").addEventListener("click",function(e){
+  if(selectedSticker===null)return;
+  if(e.target.classList.contains("placed"))return;
+  const r=this.getBoundingClientRect();
+  const x=((e.clientX-r.left)/r.width)*100;
+  const y=((e.clientY-r.top)/r.height)*100;
+  const st=S.tray.splice(selectedSticker,1)[0];
+  S.placed.push({e:st,x:Math.min(Math.max(x-4,0),92),y:Math.min(Math.max(y-5,0),90),r:Math.round(Math.random()*30-15)});
+  selectedSticker=null;saveState();renderTray();renderAlbum();
+  toast("ペタッ！ 🎀");
+});
+
+/* ================= INIT ================= */
+loadState();
+</script>
+
+<script>
+/* ===== まなびランド ブリッジ連携 ===== */
+MB.appStart('eigo');
+(function(){
+  /* シール獲得を中央シールちょうへ (テーマ: せかいのたび) */
+  const _reward = function(){
+    const e = MB.award('travel', {quiet:true});
+    document.getElementById("rewardSticker").textContent = e;
+    document.getElementById("reward").classList.add("show");
+    confetti();
+    MB.record('eigo.sticker');
+    if(S.abcDone.length===26) MB.flag('eigo.abc');
+    if(S.traceDone.length===26) MB.flag('eigo.trace');
+  };
+  giveSticker = _reward;
+
+  /* ほし加算も記録 */
+  const _addStars = addStars;
+  addStars = function(n){ _addStars(n); MB.record('eigo.stars', n); };
+
+  /* カテゴリの たんごを ぜんぶ見たら 1シール */
+  const _renderWord = renderWord;
+  renderWord = function(){
+    _renderWord();
+    const cat = CATS[catIdx];
+    if(cat.words.every(w=>S.wordsSeen[w[0]])){
+      if(MB.flag('eigo.cat.'+catIdx)){
+        MB.record('eigo.cat');
+        MB.award('travel', {delay:400});
+      }
+    }
+  };
+
+  /* アルバム画面 → 中央シールちょうを開く */
+  const _go = go;
+  go = function(id){
+    if(id==='album'){ MB.openBook(); return; }
+    _go(id);
+  };
+
+  /* トレイ数表示は 中央の合計に */
+  const _refreshHome = refreshHome;
+  refreshHome = function(){
+    _refreshHome();
+    const el=document.getElementById("trayCount");
+    if(el) el.textContent = MB.totalStickers();
+  };
+  refreshHome();
+})();
+</script>
+</body>
+</html>
